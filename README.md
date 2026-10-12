@@ -12,6 +12,8 @@ A pump track is a loop of rollers and banked turns that you ride without pedalin
 
 Ask an agent in your project to clone this repo and copy its `skills/` folder into the project's skills folder (`.claude/skills/` for Claude Code). Then start a session with `/pumptrack`.
 
+To pick up every change in all your projects instead, link each skill into your user skills folder: `ln -s "$PWD/skills/pumptrack" ~/.claude/skills/pumptrack`.
+
 ## License
 
 [MIT](LICENSE).
