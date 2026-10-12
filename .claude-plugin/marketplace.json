@@ -1,0 +1,14 @@
+{
+  "name": "pumptrack",
+  "description": "Agent skills for orchestrating coding agents",
+  "owner": {
+    "name": "Brandon Bews"
+  },
+  "plugins": [
+    {
+      "name": "pumptrack",
+      "source": "./plugins/pumptrack",
+      "description": "Agent skills for orchestrating coding agents"
+    }
+  ]
+}
