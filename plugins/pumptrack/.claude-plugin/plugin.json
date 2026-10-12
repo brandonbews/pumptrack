@@ -1,9 +1,0 @@
-{
-  "name": "pumptrack",
-  "description": "Agent skills for orchestrating coding agents",
-  "author": {
-    "name": "Brandon Bews"
-  },
-  "repository": "https://github.com/brandonbews/pumptrack",
-  "license": "MIT"
-}

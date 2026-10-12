@@ -10,12 +10,7 @@ A pump track is a loop of rollers and banked turns that you ride without pedalin
 
 ## Install
 
-```
-claude plugin marketplace add brandonbews/pumptrack
-claude plugin install pumptrack@pumptrack
-```
-
-Then start a session with `/pumptrack`.
+Ask an agent in your project to clone this repo and copy its `skills/` folder into the project's skills folder (`.claude/skills/` for Claude Code). Then start a session with `/pumptrack`.
 
 ## License
 
