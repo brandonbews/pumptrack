@@ -4,5 +4,5 @@
 /.claude/worktrees/
 /.claude/settings.local.json
 
-# Private design notes: a symlink to the pumptrack-internal repo
+# Private design notes: a clone of the pumptrack-internal repo
 /internal

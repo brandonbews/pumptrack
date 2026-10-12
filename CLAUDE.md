@@ -5,7 +5,7 @@ Open-source agent skills for orchestrating coding agents. An agent installs them
 ## Layout
 
 - `skills/<name>/SKILL.md`: one folder per skill. Only `skills/` gets copied into projects, so repo files (README, this file) stay outside it.
-- `internal/`: a gitignored symlink to the private `pumptrack-internal` repo, cloned beside this one (`ln -s ../pumptrack-internal internal`). It may be missing, and that's fine.
+- `internal/`: a gitignored clone of the private `pumptrack-internal` repo. On a new computer, clone it into `internal/` and run `internal/scripts/install-hooks.sh` once, so new worktrees get a link to it. It may be missing, and that's fine.
 
 ## Rules
 
