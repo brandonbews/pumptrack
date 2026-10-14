@@ -1,9 +1,9 @@
 ---
-name: bug-check
+name: find-bugs
 description: Find the real bugs in a code change, prove each as far as is cheap, and say how sure you are of each. Use when asked to look for bugs, when reviewing a change, or when `review` hands you one.
 ---
 
-# Bug check
+# Find bugs
 
 **Your goal:** find the bugs that are really there, and show how sure you are of each, so nobody chases a false alarm.
 
