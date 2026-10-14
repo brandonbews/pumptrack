@@ -5,7 +5,7 @@ Open-source agent skills for orchestrating coding agents. An agent installs them
 ## Layout
 
 - `skills/<name>/SKILL.md`: one folder per skill. Only `skills/` gets copied into projects, so repo files (README, this file) stay outside it.
-- `evals/`: scripted checks of how the skills behave, run through Claude Code's headless mode. Each run costs real model use, so run one after changing the skill it checks.
+- `evals/`: scripted checks of how the skills behave, run through Claude Code's headless mode. Each run uses real model time, about $2 at API prices, so run one after changing the skill it checks.
 - `internal/`: a gitignored clone of the private `brandonbews/pumptrack-internal` repo, which holds the design notes. It may be missing, and that's fine. To set it up on a computer, follow the README's "Private notes".
 
 ## Rules

@@ -10,7 +10,8 @@ The sessions leave out your user-level setup (personal skills, CLAUDE.md and
 rules, settings and MCP servers) and auto memory, so the results reflect
 pumptrack alone and don't depend on who runs them. They may edit files and run
 git inside the throwaway project; anything else that would ask for permission
-is denied. A full run costs about $2 of model use.
+is denied. A full run uses about $2 at API prices; on a subscription that
+counts toward the plan's usage limits rather than being billed.
 
     python3 evals/delegation.py                  # every case
     python3 evals/delegation.py fix tracker      # some cases
@@ -293,7 +294,7 @@ def main():
         total += cost
         print(f"{'PASS' if passed else 'FAIL'}  {name}: {summary}")
         print(f"      its own calls ({reading:,} characters read): {' → '.join(calls) or 'none'}")
-    print(f"\nCost ${total:.2f}. Projects and session logs: {workdir}")
+    print(f"\nAPI-price equivalent: ${total:.2f}. Projects and session logs: {workdir}")
     sys.exit(0 if all(r[1] for r in results) else 1)
 
 
