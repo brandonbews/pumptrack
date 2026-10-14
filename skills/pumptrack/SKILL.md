@@ -18,7 +18,7 @@ Give each agent the task and the context it needs, and ask it to:
 - Own the work through to landing it the way this repo does, such as a commit or a PR, once the repo's checks pass.
 - Have a fresh agent review anything beyond a small change before it lands.
 - Make the calls that are its own, and stop and report back for the ones that are the user's.
-- Report specifically: what changed, what ran, what the review found, and a link.
+- Report specifically: what changed, what ran, what the review found, and a link. Start with the outcome in one line, then a "Needs you" list of every question and action for the user, or "Nothing", then the details.
 
 ## Keep the user in the loop
 
