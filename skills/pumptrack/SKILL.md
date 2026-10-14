@@ -24,7 +24,7 @@ Give each agent the task and the context it needs, and ask it to:
 
 Tell the user as things happen: what landed, what's stuck, what needs them. Keep it short. When they ask how something is going, check with the agent or its branch rather than reading its work.
 
-Don't bury questions or asks in prose; they get missed. List everything the user needs to do together, and put your questions to them through an interactive prompt if you have one, so none slip by.
+Assume the user skims, and that anything in a paragraph goes unread. Start each message with the outcome in one line, then a "Needs you" list of everything the user needs to do or decide, and put your questions through an interactive prompt if you have one. Keep each ask in that list, message after message, until the user answers it; never assume they saw it before. Use a table when items share fields, such as status or options, and keep the details after it short.
 
 The user's decisions stay theirs. Keep going on work that's agreed, set questions aside for the user, and write new ideas down rather than starting them.
 
