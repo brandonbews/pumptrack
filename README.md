@@ -17,22 +17,29 @@ The picture is a pump track whose lines branch apart and all come back to the st
 | A line | A path a rider takes through the skills, such as build, then review, then a bug check |
 | A rider | An agent pumptrack sends out |
 | A run | One rider's trip down one line. A rider comes back, reports, and may go out on another run |
-| Many tracks (later) | One view across all your projects: what needs you, what happened overnight |
+| The lookout | `pumptrack-lookout`, one agent in the folder above all your projects. It asks each pumptrack to catch it up and combines the answers on one page |
 
 ### V0.1
 
-A few small skills that call each other, enough to use on real work. Review is one skill whether it checks a builder's change before landing, someone's PR or a re-review; only the context it's given changes. A thin `pr-review` skill handles the GitHub side. On a first review it posts the findings you pick in your name; when you've reviewed before, it checks whether your comments were resolved and says whether the PR is ready to approve. Builders follow the principles, and reviewers use them to keep only the findings that matter. When a topic goes deep, pumptrack opens a sidebar you work in directly, which tells pumptrack when it's done. Long sessions carry on through compaction, and a handoff moves pumptrack to a fresh session when a clean start is better.
+A few small skills that call each other, enough to use on real work. Review is one skill whether it checks a builder's change before landing, someone's PR or a re-review; only the context it's given changes. A thin `pr-review` skill handles the GitHub side. On a first review it posts the findings you pick in your name; when you've reviewed before, it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and applies what you accept. It can also open a diff in the viewer you use, for you to read yourself. Builders follow the principles, and reviewers use them to keep only the findings that matter. When a topic goes deep, pumptrack opens a sidebar you work in directly, which tells pumptrack when it's done. Long sessions carry on through compaction, and a handoff moves pumptrack to a fresh session when a clean start is better.
+
+When you come back to a session you've lost track of, run `/catch-up`: one table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong. In pumptrack it covers the project, and anywhere else the thread. From the folder above all your projects, the lookout asks each running pumptrack to catch it up and combines the answers on one page you can pin.
 
 ```mermaid
 flowchart LR
   you(["You"]) <-->|talk and plan| pt["pumptrack"]
+  you <-->|catch up| lookout["lookout, above<br/>all your projects"]
+  lookout <-->|"asks for<br/>a catch-up"| pt
+  pt -->|"when you're back"| catchup["catch-up"]
   pt <-->|"briefs,<br/>hears it's done"| sidebar["sidebar, such as<br/>grilling a plan"]
   pt -->|"for a clean start"| handoff["handoff to a<br/>fresh pumptrack"]
   pt <-->|"sends a rider,<br/>hears back"| build["build"]
   build <-->|"fresh eyes<br/>before landing"| review["review"]
   pt <-->|"a PR, first look<br/>or re-review"| prreview["pr-review"]
   prreview --> review
-  review <--> bugs["bug check"]
+  pt <-->|"feedback on<br/>your PR"| feedback["PR feedback"]
+  pt -->|for you to read| diff["show a diff"]
+  review <--> bugs["bug-check"]
   build -.-> principles[["principles"]]
   review -.-> principles
   bugs -.-> principles
@@ -40,18 +47,19 @@ flowchart LR
 
 ### V1
 
-V0.1 plus onboarding, which learns how to run, check and QA the project, and walks you through setting up whatever is missing.
+V0.1 plus onboarding, which learns how to run, check and QA the project, and walks you through setting up whatever is missing. Builders also attach screenshots or recordings to a PR when a change is visible and the project allows it.
 
 ### Where it's heading
 
-Solid pieces are V0.1. Onboarding comes in V1, and the other dashed pieces after. Applying PR feedback is drawn here but stays out of the package for now.
+Solid pieces are V0.1. Onboarding comes in V1, and the other dashed pieces after.
 
 ```mermaid
 flowchart TD
   you(["You"])
-  across["one view across<br/>all your projects"]
+  lookout["lookout"]
+  page["one page to catch up"]
   sources[("Slack, Jira and other<br/>sources you pick")]
-  others["other projects"]
+  others["other projects' pumptracks"]
 
   subgraph track["A project: one track"]
     pt["pumptrack"]
@@ -62,6 +70,7 @@ flowchart TD
     end
     records[("tracker and docs")]
     handoff["handoff to a<br/>fresh pumptrack"]
+    diff["show a diff"]
     onboarding["onboarding: how to run,<br/>check and QA the project"]
     settings[(".pumptrack/ settings")]
     principles[["principles"]]
@@ -69,28 +78,31 @@ flowchart TD
       direction TB
       build["build"]
       review["review"]
-      bugs["bug check"]
+      bugs["bug-check"]
       prreview["pr-review"]
+      catchup["catch-up"]
       audit["audit"]
-      apply["apply PR feedback"]
+      feedback["PR feedback"]
     end
   end
 
-  you <--> across
+  you <--> lookout
   you <--> pt
-  across -.->|reads, nudges| pt
-  across -.-> others
-  across -.->|reads| sources
+  lookout <-->|"asks for<br/>a catch-up"| pt
+  lookout <--> others
+  lookout --> page
+  lookout -.->|reads| sources
   pt <-->|"riders go out<br/>and report back"| skills
   pt <-->|"briefs,<br/>hears it's done"| sides
   pt --> handoff
+  pt --> diff
   pt --> records
   sides --> records
   onboarding -.->|writes| settings
   principles -.-> skills
 
   classDef later stroke-dasharray: 5 4
-  class across,sources,others,design,onboarding,settings,audit,apply later
+  class sources,design,onboarding,settings,audit later
 ```
 
 ## Status
