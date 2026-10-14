@@ -1,10 +1,11 @@
 # pumptrack
 
-Open-source agent skills for orchestrating coding agents. An agent installs them by cloning this repo and copying `skills/` into a project. A personal project of Brandon's, published on GitHub for anyone to use. Design notes live in `internal/DESIGN.md`.
+Open-source agent skills for orchestrating coding agents. An agent installs them by cloning this repo and copying `skills/` into a project. A personal project of Brandon's, to be published on GitHub for anyone to use. The repo stays private until then, but everything in it is written as public. Design notes live in `internal/DESIGN.md`.
 
 ## Layout
 
 - `skills/<name>/SKILL.md`: one folder per skill. Only `skills/` gets copied into projects, so repo files (README, this file) stay outside it.
+- `evals/`: scripted checks of how the skills behave, run through Claude Code's headless mode. Each run costs real model use, so run one after changing the skill it checks.
 - `internal/`: a gitignored clone of the private `brandonbews/pumptrack-internal` repo, which holds the design notes. It may be missing, and that's fine. To set it up on a computer, follow the README's "Private notes".
 
 ## Rules
