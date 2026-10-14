@@ -6,9 +6,11 @@ in headless Claude Code sessions, and makes requests that never mention
 subagents. Then it looks at the orchestrator's own tool calls: it should send
 an agent, not edit files or dig through the project itself.
 
-The sessions may edit files and run git inside the throwaway project; anything
-else that would ask for permission is denied. Each case costs up to a few
-dollars of model use.
+The sessions leave out your user-level setup (personal skills, CLAUDE.md and
+rules, settings and MCP servers) and auto memory, so the results reflect
+pumptrack alone and don't depend on who runs them. They may edit files and run
+git inside the throwaway project; anything else that would ask for permission
+is denied. A full run costs about $2 of model use.
 
     python3 evals/delegation.py                  # every case
     python3 evals/delegation.py fix tracker      # some cases
@@ -17,6 +19,7 @@ dollars of model use.
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -32,7 +35,8 @@ CASES = {
     "start": ([], False),
     "fix": (["Fix the typo in the README."], True),
     "explore": (["Walk me through how checkout works, from the entry point to the receipt."], True),
-    # Answering from what it already knows is fine; reading the tracker itself is not.
+    # Answering from what it already knows, or after one targeted search that brings
+    # back little, is fine; reading the whole tracker is not.
     "tracker": (["What's still open in the tracker?"], False),
     "after-compact": ([
         "Fix the typo in the README.",
@@ -180,12 +184,14 @@ def run_turn(cwd, prompt, session, model, log):
     cmd = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose",
            "--permission-mode", "acceptEdits", "--allowedTools", "Bash(git *)",
            "--permission-prompts", "none",
+           "--setting-sources", "project,local", "--strict-mcp-config",
            "--max-budget-usd", "5"]
     if session:
         cmd += ["--resume", session]
     if model:
         cmd += ["--model", model]
-    out = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=1800)
+    out = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=1800,
+                         env={**os.environ, "CLAUDE_CODE_DISABLE_AUTO_MEMORY": "1"})
     log.write_text(out.stdout + out.stderr)
     events = []
     for line in out.stdout.splitlines():
@@ -193,10 +199,20 @@ def run_turn(cwd, prompt, session, model, log):
             events.append(json.loads(line))
         except json.JSONDecodeError:
             pass
-    result = next((e for e in reversed(events) if e.get("type") == "result"), {})
+    results = [e for e in events if e.get("type") == "result"]
+    result = results[-1] if results else {}
     session = result.get("session_id") or next(
         (e["session_id"] for e in events if e.get("session_id")), session)
-    return events, session, result.get("total_cost_usd") or 0
+    error = next((e for e in results if e.get("is_error")), None)
+    if error:
+        failure = f"ended in an error: {error.get('result') or error.get('subtype')}"
+    elif out.returncode:
+        failure = f"exited {out.returncode}: {out.stderr.strip() or 'no error output'}"
+    elif not results:
+        failure = "gave no result"
+    else:
+        failure = None
+    return events, session, result.get("total_cost_usd"), failure
 
 
 def own_activity(events):
@@ -230,15 +246,17 @@ def run_case(name, turns, must_delegate, model, workdir):
     root = workdir / name
     root.mkdir()
     make_project(root)
-    session, cost = None, 0
+    session, cost, problems = None, 0, []
     for i, prompt in enumerate(["/pumptrack"] + turns):
-        events, session, turn_cost = run_turn(root, prompt, session, model, workdir / f"{name}-{i}.jsonl")
-        cost += turn_cost
+        events, session, session_cost, failure = run_turn(root, prompt, session, model, workdir / f"{name}-{i}.jsonl")
+        cost = session_cost or cost  # a running total for the session, not this turn's share
+        if failure:
+            problems.append(f"turn {i} {' '.join(failure.split())[:200]}")
+            break
     calls, reading = own_activity(events)
     names = [n for n, _ in calls]
     own_calls = sum(n in WORK_TOOLS for n in names)
-    problems = []
-    if must_delegate and not any(n in AGENT_TOOLS for n in names):
+    if must_delegate and not failure and not any(n in AGENT_TOOLS for n in names):
         problems.append("never sent an agent")
     if any(n in EDIT_TOOLS for n in names):
         problems.append("edited files itself")
@@ -253,15 +271,22 @@ def run_case(name, turns, must_delegate, model, workdir):
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("cases", nargs="*", help=f"cases to run (default: all): {', '.join(CASES)}")
-    parser.add_argument("--model", help="model for the headless sessions (default: your Claude Code default)")
+    parser.add_argument("--model", help="model for the headless sessions (default: Claude Code's default for your account)")
     args = parser.parse_args()
     if unknown := set(args.cases) - set(CASES):
         parser.error(f"unknown cases: {', '.join(sorted(unknown))}")
     names = args.cases or list(CASES)
 
     workdir = Path(tempfile.mkdtemp(prefix="pumptrack-eval-"))
+
+    def run(name):
+        try:
+            return run_case(name, *CASES[name], args.model, workdir)
+        except Exception as e:
+            return name, False, f"raised {type(e).__name__}: {e}", [], 0, 0
+
     with ThreadPoolExecutor() as pool:
-        results = list(pool.map(lambda n: run_case(n, *CASES[n], args.model, workdir), names))
+        results = list(pool.map(run, names))
 
     total = 0
     for name, passed, summary, calls, reading, cost in results:
