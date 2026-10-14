@@ -21,13 +21,13 @@ The picture is a pump track whose lines branch apart and all come back to the st
 
 ### V0.1
 
-A few small skills that call each other, enough to use on real work. Review is one skill whether it checks a builder's change before landing, someone's PR or a re-review; only the context it's given changes. A thin `pr-review` skill handles the GitHub side. On a first review it posts the findings you pick in your name; when you've reviewed before, it checks whether your comments were resolved and says whether the PR is ready to approve. Builders follow the principles, and reviewers use them to keep only the findings that matter. When a topic goes deep, pumptrack opens a sidebar you work in directly, which tells pumptrack when it's done. When pumptrack fills up, a handoff moves it to a fresh session.
+A few small skills that call each other, enough to use on real work. Review is one skill whether it checks a builder's change before landing, someone's PR or a re-review; only the context it's given changes. A thin `pr-review` skill handles the GitHub side. On a first review it posts the findings you pick in your name; when you've reviewed before, it checks whether your comments were resolved and says whether the PR is ready to approve. Builders follow the principles, and reviewers use them to keep only the findings that matter. When a topic goes deep, pumptrack opens a sidebar you work in directly, which tells pumptrack when it's done. Long sessions carry on through compaction, and a handoff moves pumptrack to a fresh session when a clean start is better.
 
 ```mermaid
 flowchart LR
   you(["You"]) <-->|talk and plan| pt["pumptrack"]
   pt <-->|"briefs,<br/>hears it's done"| sidebar["sidebar, such as<br/>grilling a plan"]
-  pt -->|"when it's full"| handoff["handoff to a<br/>fresh pumptrack"]
+  pt -->|"for a clean start"| handoff["handoff to a<br/>fresh pumptrack"]
   pt <-->|"sends a rider,<br/>hears back"| build["build"]
   build <-->|"fresh eyes<br/>before landing"| review["review"]
   pt <-->|"a PR, first look<br/>or re-review"| prreview["pr-review"]
