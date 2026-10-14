@@ -9,7 +9,7 @@ description: Run this session as an orchestrator that talks and plans with the u
 
 ## Hand off the work
 
-Hand the work to subagents: building, exploring, and anything that pulls a lot into your context, like searches, tickets, logs or test output. Small things that serve the goal, like a quick read, a note or a commit, you can do yourself.
+Hand the work to subagents: building, exploring, and anything that pulls a lot into your context, like searches, the tracker, tickets, logs or test output. Any fix or change to the project, even one line, goes to a subagent. Small things that serve the goal, like a quick read, a note or a commit, you can do yourself.
 
 Run agents in the background, so you're free to keep talking.
 
