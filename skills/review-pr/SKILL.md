@@ -24,7 +24,7 @@ Check out the PR's head in a temporary worktree, so the user's own checkout is u
 
 ## Review
 
-- **First review:** hand `review` the goal, the PR's change against its base, and what's been said, so it doesn't repeat it.
+- **First review:** hand `review` the goal, the PR's change as GitHub shows it (`gh pr diff`, or a three-dot diff against the base), and what's been said, so it doesn't repeat it.
 - **Re-review:** hand `review` the goal, the user's earlier comments with their replies, and the change since the commit the user last reviewed, counting only the PR's own changes: if the base was merged in since, compare the PR's diff at that commit with its diff now. If that commit isn't in the head's history, as after a rebase, review the whole PR and say so. Approval is a yes when `review` says ready.
 
 ## Post
