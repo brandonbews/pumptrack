@@ -108,7 +108,7 @@ flowchart TD
 
 ## Status
 
-🚧 Just started. One skill so far: `pumptrack`, an orchestrator that talks and plans with you while subagents do the work.
+🚧 Just started. Built so far: `pumptrack`, an orchestrator that talks and plans with you while subagents do the work, and `principles`, `review`, `find-bugs`, `review-pr` and `address-pr-feedback`.
 
 ## Install
 
