@@ -21,7 +21,7 @@ The picture is a pump track whose lines branch apart and all come back to the st
 
 ### V0.1
 
-A few small skills that call each other, enough to use on real work. Onboarding learns how to run, check and QA the project, walks you through setting up whatever is missing, and offers to write the project a skill that drives the app to prove a change works. Review is one skill whether it checks a builder's change before landing, someone's PR or a re-review; only the context it's given changes. A thin `review-pr` skill handles the GitHub side. On a first review it posts the findings you pick in your name; when you've reviewed before, it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and applies what you accept. Builders follow the principles, and reviewers use them to keep only the findings that matter. When a topic goes deep, pumptrack opens a sidebar you work in directly, which tells pumptrack when it's done. Long sessions carry on through compaction. Before you compact or clear, a handoff writes down what's still live, and pumptrack picks it up when it starts again. When an agent has something for you to read, such as a file, a diff or a report, it shows it the way you like, asking the first time.
+A few small skills that call each other, enough to use on real work. Setting up installs the skills, learns how the project checks, tracks and lands work, keeps that in notes the project's instructions point to, and offers to write the project a skill that drives the app the way a user does to prove a change works. Review is one skill whether it checks a builder's change before landing, someone's PR or a re-review; only the context it's given changes. A thin `review-pr` skill handles the GitHub side. On a first review it posts the findings you pick in your name; when you've reviewed before, it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and applies what you accept. Builders follow the principles, and reviewers use them to keep only the findings that matter. When a topic goes deep, pumptrack opens a sidebar you work in directly, which tells pumptrack when it's done. Long sessions carry on through compaction. Before you compact or clear, a handoff writes down what's still live, and pumptrack picks it up when it starts again. When an agent has something for you to read, such as a file, a diff or a report, it shows it the way you like, asking the first time.
 
 When you come back to a session you've lost track of, run `/catch-up`: one table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong. In pumptrack it covers the project, and anywhere else the thread. From the folder above all your projects, the lookout asks each running session to catch it up and combines the answers on one page you can pin.
 
@@ -29,7 +29,8 @@ When you come back to a session you've lost track of, run `/catch-up`: one table
 flowchart LR
   you(["You"]) <-->|talk and plan| pt["pumptrack"]
   you <-->|catch up| lookout["lookout, above<br/>all your projects"]
-  you -->|"set up a<br/>project, once"| onboarding["onboarding"]
+  you -->|"set up a<br/>project, once"| setup["setup-pumptrack"]
+  setup -->|offers| verify["create-verify-skill"]
   lookout <-->|"asks for<br/>a catch-up"| pt
   pt -->|"when you're back"| catchup["catch-up"]
   pt -->|"for you<br/>to read"| show["show-user"]
@@ -72,8 +73,8 @@ flowchart TD
     end
     records[("tracker and docs")]
     handoff["handoff"]
-    onboarding["onboarding: how to run,<br/>check and QA the project"]
-    settings[(".pumptrack/ settings")]
+    setup["setup-pumptrack: how to check,<br/>track and land work"]
+    notes[("notes for agents")]
     principles[["principles"]]
     subgraph skills["Skills riders use"]
       direction TB
@@ -99,7 +100,7 @@ flowchart TD
   pt <--> handoff
   pt --> records
   sides --> records
-  onboarding -->|writes| settings
+  setup -->|writes| notes
   principles -.-> skills
 
   classDef later stroke-dasharray: 5 4
@@ -108,15 +109,13 @@ flowchart TD
 
 ## Status
 
-🚧 Just started. Built so far: `pumptrack`, an orchestrator that talks and plans with you while subagents do the work, and `principles`, `build`, `review`, `find-bugs`, `review-pr`, `address-pr-feedback`, `sidebar`, `handoff`, `grill`, `catch-up`, `show-user` and `pumptrack-lookout`.
+🚧 Just started. Built so far: `pumptrack`, an orchestrator that talks and plans with you while subagents do the work, and `principles`, `build`, `review`, `find-bugs`, `review-pr`, `address-pr-feedback`, `sidebar`, `handoff`, `grill`, `catch-up`, `show-user`, `pumptrack-lookout`, `setup-pumptrack` and `create-verify-skill`.
 
 ## Install
 
-Ask an agent in your project to clone this repo and copy its `skills/` folder into the project's skills folder (`.claude/skills/` for Claude Code). Then start a session with `/pumptrack`.
+Ask an agent in your project to clone this repo and follow `skills/setup-pumptrack/SKILL.md`. It asks whether the skills go in the project or just for you, installs them, and sets the project up. Then start a session with `/pumptrack`.
 
-To pick up every change in all your projects instead, link each skill into your user skills folder: `ln -s "$PWD/skills/pumptrack" ~/.claude/skills/pumptrack`.
-
-The lookout goes in the folder that holds your projects, not in any one of them. Link it into that folder's skills folder, then start a session there with `/pumptrack-lookout`. For Claude Code, with your projects in `~/projects`: `mkdir -p ~/projects/.claude/skills && ln -s "$PWD/pumptrack-lookout" ~/projects/.claude/skills/pumptrack-lookout`.
+The lookout goes in the folder that holds your projects, not in any one of them. Setting up offers to link it into that folder's skills folder; then start a session there with `/pumptrack-lookout`. For Claude Code, with your projects in `~/projects`: `mkdir -p ~/projects/.claude/skills && ln -s "$PWD/pumptrack-lookout" ~/projects/.claude/skills/pumptrack-lookout`.
 
 ## Private notes
 
