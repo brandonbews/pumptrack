@@ -21,7 +21,7 @@ The picture is a pump track whose lines branch apart and all come back to the st
 
 ### V0.1
 
-A few small skills that call each other, enough to use on real work. Review is one skill whether it checks a builder's change before landing, someone's PR or a re-review; only the context it's given changes. A thin `review-pr` skill handles the GitHub side. On a first review it posts the findings you pick in your name; when you've reviewed before, it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and applies what you accept. It can also open a diff in the viewer you use, for you to read yourself. Builders follow the principles, and reviewers use them to keep only the findings that matter. When a topic goes deep, pumptrack opens a sidebar you work in directly, which tells pumptrack when it's done. Long sessions carry on through compaction. Before you compact or clear, a handoff writes down what's still live, and pumptrack picks it up when it starts again.
+A few small skills that call each other, enough to use on real work. Review is one skill whether it checks a builder's change before landing, someone's PR or a re-review; only the context it's given changes. A thin `review-pr` skill handles the GitHub side. On a first review it posts the findings you pick in your name; when you've reviewed before, it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and applies what you accept. Builders follow the principles, and reviewers use them to keep only the findings that matter. When a topic goes deep, pumptrack opens a sidebar you work in directly, which tells pumptrack when it's done. Long sessions carry on through compaction. Before you compact or clear, a handoff writes down what's still live, and pumptrack picks it up when it starts again.
 
 When you come back to a session you've lost track of, run `/catch-up`: one table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong. In pumptrack it covers the project, and anywhere else the thread. From the folder above all your projects, the lookout asks each running pumptrack to catch it up and combines the answers on one page you can pin.
 
@@ -38,7 +38,6 @@ flowchart LR
   pt <-->|"a PR, first look<br/>or re-review"| prreview["review-pr"]
   prreview --> review
   pt <-->|"feedback on<br/>your PR"| feedback["address-pr-feedback"]
-  pt -->|for you to read| diff["show a diff"]
   feedback --> build
   review <--> bugs["find-bugs"]
   build -.-> principles[["principles"]]
@@ -71,7 +70,6 @@ flowchart TD
     end
     records[("tracker and docs")]
     handoff["handoff"]
-    diff["show a diff"]
     onboarding["onboarding: how to run,<br/>check and QA the project"]
     settings[(".pumptrack/ settings")]
     principles[["principles"]]
@@ -96,7 +94,6 @@ flowchart TD
   pt <-->|"riders go out<br/>and report back"| skills
   pt <-->|"briefs,<br/>hears it's done"| sides
   pt <--> handoff
-  pt --> diff
   pt --> records
   sides --> records
   onboarding -.->|writes| settings
