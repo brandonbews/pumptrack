@@ -34,8 +34,8 @@ Check out the PR's head in a temporary worktree, so the user's own checkout is u
 3. Write the summary, ending with the same line, and show it to the user, but hold it back from GitHub until submitting. Submitting from GitHub's own dialog may drop a summary set through the API.
 4. Submit only when the user says to, with the event they choose (approve, request changes or comment) and the summary: through the pending review's submit endpoint, or as a new review if nothing is pending.
 
-If you can't talk to the user, as when another agent sent you, stop before posting and report. You'll be sent back with the user's picks.
+If you can't talk to the user, as when another agent sent you, stop before posting and report. You'll be sent back with the user's picks; post them as given, on the commit you reviewed.
 
 ## Report
 
-Start with the outcome in one line, such as "4 findings on #42 for you to pick" or "#42 is ready to approve". Then a "Needs you" list of every question and action for the user, or "Nothing", such as which findings to post and whether to submit. Then `review`'s findings, and on a re-review each earlier comment and where it stands. Once anything is posted, link the PR.
+Start with the outcome in one line, such as "4 findings on #42 for you to pick" or "#42 is ready to approve". Then a "Needs you" list of every question and action for the user, or "Nothing", such as which findings to post and whether to submit. Then the commit you reviewed, `review`'s findings, and on a re-review each earlier comment and where it stands. Once anything is posted, link the PR.
