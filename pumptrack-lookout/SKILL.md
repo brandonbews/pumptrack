@@ -26,4 +26,4 @@ Where two rows name the same piece of work, such as a sidebar's own row and its 
 
 ## Report
 
-Where you can publish a page, publish the report as one, and give the user the link. Update the page you published last time, found by its title, so the link stays the same and the user can pin it. Otherwise, show the table.
+Where you can publish a page, publish the report as one titled "Lookout", and give the user the link. Update the page you published last time, found by its title, so the link stays the same and the user can pin it. Otherwise, show the table.
