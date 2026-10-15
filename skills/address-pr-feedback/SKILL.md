@@ -15,7 +15,7 @@ The PR: a number or URL. If you weren't told, use the current branch's PR, and s
 
 Use `gh` and GitHub's API. Collect what's still open:
 
-- Inline threads not yet resolved, each with its replies as one item (GitHub's GraphQL API has the thread state). Flag any that a later push made outdated.
+- Inline threads not yet resolved whose last comment isn't the user's, each with its replies as one item (GitHub's GraphQL API has the thread state). Flag any that a later push made outdated.
 - Review summaries and conversation comments the user hasn't answered.
 
 Note which authors are bots. Read the PR's goal too: its description, and the ticket it links if any.
