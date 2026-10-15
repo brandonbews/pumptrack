@@ -17,13 +17,13 @@ The picture is a pump track whose lines branch apart and all come back to the st
 | A line | A path a rider takes through the skills, such as build, then review, then a bug check |
 | A rider | An agent pumptrack sends out |
 | A run | One rider's trip down one line. A rider comes back, reports, and may go out on another run |
-| The lookout | `pumptrack-lookout`, one agent in the folder above all your projects. It asks each pumptrack to catch it up and combines the answers on one page |
+| The lookout | `pumptrack-lookout`, one agent in the folder above all your projects. It asks each running session to catch it up and combines the answers on one page |
 
 ### V0.1
 
 A few small skills that call each other, enough to use on real work. Review is one skill whether it checks a builder's change before landing, someone's PR or a re-review; only the context it's given changes. A thin `review-pr` skill handles the GitHub side. On a first review it posts the findings you pick in your name; when you've reviewed before, it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and applies what you accept. Builders follow the principles, and reviewers use them to keep only the findings that matter. When a topic goes deep, pumptrack opens a sidebar you work in directly, which tells pumptrack when it's done. Long sessions carry on through compaction. Before you compact or clear, a handoff writes down what's still live, and pumptrack picks it up when it starts again. When an agent has something for you to read, such as a file, a diff or a report, it shows it the way you like, asking the first time.
 
-When you come back to a session you've lost track of, run `/catch-up`: one table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong. In pumptrack it covers the project, and anywhere else the thread. From the folder above all your projects, the lookout asks each running pumptrack to catch it up and combines the answers on one page you can pin.
+When you come back to a session you've lost track of, run `/catch-up`: one table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong. In pumptrack it covers the project, and anywhere else the thread. From the folder above all your projects, the lookout asks each running session to catch it up and combines the answers on one page you can pin.
 
 ```mermaid
 flowchart LR
@@ -107,13 +107,15 @@ flowchart TD
 
 ## Status
 
-🚧 Just started. Built so far: `pumptrack`, an orchestrator that talks and plans with you while subagents do the work, and `principles`, `build`, `review`, `find-bugs`, `review-pr`, `address-pr-feedback`, `sidebar`, `handoff`, `grill`, `catch-up` and `show-user`.
+🚧 Just started. Built so far: `pumptrack`, an orchestrator that talks and plans with you while subagents do the work, and `principles`, `build`, `review`, `find-bugs`, `review-pr`, `address-pr-feedback`, `sidebar`, `handoff`, `grill`, `catch-up`, `show-user` and `pumptrack-lookout`.
 
 ## Install
 
 Ask an agent in your project to clone this repo and copy its `skills/` folder into the project's skills folder (`.claude/skills/` for Claude Code). Then start a session with `/pumptrack`.
 
 To pick up every change in all your projects instead, link each skill into your user skills folder: `ln -s "$PWD/skills/pumptrack" ~/.claude/skills/pumptrack`.
+
+The lookout goes in the folder that holds your projects, not in any one of them. Link it into that folder's skills folder, then start a session there with `/pumptrack-lookout`. For Claude Code, with your projects in `~/projects`: `mkdir -p ~/projects/.claude/skills && ln -s "$PWD/pumptrack-lookout" ~/projects/.claude/skills/pumptrack-lookout`.
 
 ## Private notes
 
