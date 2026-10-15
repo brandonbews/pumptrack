@@ -21,7 +21,7 @@ The picture is a pump track whose lines branch apart and all come back to the st
 
 ### V0.1
 
-A few small skills that call each other, enough to use on real work. Review is one skill whether it checks a builder's change before landing, someone's PR or a re-review; only the context it's given changes. A thin `review-pr` skill handles the GitHub side. On a first review it posts the findings you pick in your name; when you've reviewed before, it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and applies what you accept. Builders follow the principles, and reviewers use them to keep only the findings that matter. When a topic goes deep, pumptrack opens a sidebar you work in directly, which tells pumptrack when it's done. Long sessions carry on through compaction. Before you compact or clear, a handoff writes down what's still live, and pumptrack picks it up when it starts again.
+A few small skills that call each other, enough to use on real work. Review is one skill whether it checks a builder's change before landing, someone's PR or a re-review; only the context it's given changes. A thin `review-pr` skill handles the GitHub side. On a first review it posts the findings you pick in your name; when you've reviewed before, it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and applies what you accept. Builders follow the principles, and reviewers use them to keep only the findings that matter. When a topic goes deep, pumptrack opens a sidebar you work in directly, which tells pumptrack when it's done. Long sessions carry on through compaction. Before you compact or clear, a handoff writes down what's still live, and pumptrack picks it up when it starts again. When an agent has something for you to read, such as a file, a diff or a report, it shows it the way you like, asking the first time.
 
 When you come back to a session you've lost track of, run `/catch-up`: one table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong. In pumptrack it covers the project, and anywhere else the thread. From the folder above all your projects, the lookout asks each running pumptrack to catch it up and combines the answers on one page you can pin.
 
@@ -31,6 +31,7 @@ flowchart LR
   you <-->|catch up| lookout["lookout, above<br/>all your projects"]
   lookout <-->|"asks for<br/>a catch-up"| pt
   pt -->|"when you're back"| catchup["catch-up"]
+  pt -->|"for you<br/>to read"| show["show-user"]
   pt <-->|"briefs,<br/>hears it's done"| sidebar["sidebar, such as<br/>grilling a plan"]
   pt <-->|"before a compact,<br/>picks it up after"| handoff["handoff"]
   pt <-->|"sends a rider,<br/>hears back"| build["build"]
@@ -80,6 +81,7 @@ flowchart TD
       bugs["find-bugs"]
       prreview["review-pr"]
       catchup["catch-up"]
+      show["show-user"]
       audit["audit"]
       feedback["address-pr-feedback"]
     end
@@ -105,7 +107,7 @@ flowchart TD
 
 ## Status
 
-🚧 Just started. Built so far: `pumptrack`, an orchestrator that talks and plans with you while subagents do the work, and `principles`, `build`, `review`, `find-bugs`, `review-pr`, `address-pr-feedback`, `sidebar`, `handoff`, `grill` and `catch-up`.
+🚧 Just started. Built so far: `pumptrack`, an orchestrator that talks and plans with you while subagents do the work, and `principles`, `build`, `review`, `find-bugs`, `review-pr`, `address-pr-feedback`, `sidebar`, `handoff`, `grill`, `catch-up` and `show-user`.
 
 ## Install
 

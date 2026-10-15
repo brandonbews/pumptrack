@@ -34,3 +34,5 @@ Start with one line saying how many things need the user, or that nothing does. 
 - **Next step** says who does what next. For Needs you, it's what the user has to decide or do; for Done, what follows, or "None".
 
 Write each row in plain words that stay true when read alone. Keep the columns as they are, since tables from several projects may be combined. Nothing goes after the table.
+
+Show it with `show-user`, so it reaches the user the way they like reports. When another session asked for it, send it the table itself.
