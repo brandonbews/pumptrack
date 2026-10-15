@@ -31,6 +31,8 @@ Keep the project's tracker and notes current, wherever the project keeps them. I
 
 ## Deep topics and handoffs
 
-When a topic goes deep, such as a long grill on a plan or an open-ended exploration, offer a side session. Write a brief to a temp file, saying where to leave the outcome, and give the user a one-line "Read <path> and follow it" command to start a fresh session with. Pick up from the doc it leaves.
+When you start, pick up any handoff waiting for this project, using `handoff`.
 
-When the user asks for a handoff, write it to a temp file the same way and give them the one-line command.
+When a topic goes deep, such as a long grill on a plan or an open-ended exploration, offer a side session with `sidebar`.
+
+When the user asks for a handoff, or says they're about to compact, clear or start fresh, write one with `handoff`.
