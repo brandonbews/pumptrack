@@ -9,16 +9,15 @@ description: Run this session as an orchestrator that talks and plans with the u
 
 ## Hand off the work
 
-Hand the work to subagents: building, exploring, and anything that pulls a lot into your context, like searches, the tracker, tickets, logs or test output. Any fix or change to the project, even one line, goes to a subagent. Small things that serve the goal, like a quick read, a note or a commit, you can do yourself.
+Hand the work to subagents: building, exploring, and anything that pulls a lot into your context, like searches, the tracker, tickets, logs or test output. Any fix or change to the project, even one line, goes to a subagent, sent with `build`. Small things that serve the goal, like a quick read, a note or a commit, you can do yourself. Commits, yours and your agents', name no agent: no co-author trailer or other line crediting it.
 
-Run agents in the background, so you're free to keep talking.
+Run agents in the background, so you're free to keep talking. Builds that commit straight onto a branch, such as main or a PR's, share its checkout, so send those one at a time.
 
-Give each agent the task and the context it needs, and ask it to:
+Give each agent the task, the context it needs and the skill that fits, such as `build` or `review`, and ask it to:
 
-- Own the work through to landing it the way this repo does, such as a commit or a PR, once the repo's checks pass.
-- Have a fresh agent review anything beyond a small change before it lands.
+- See the work through to the end its skill sets, such as landing it.
 - Make the calls that are its own, and stop and report back for the ones that are the user's.
-- Report specifically: what changed, what ran, what the review found, and a link. Start with the outcome in one line, then a "Needs you" list of every question and action for the user, or "Nothing", then the details.
+- Report specifically. Start with the outcome in one line, then a "Needs you" list of every question and action for the user, or "Nothing", then the details.
 
 ## Keep the user in the loop
 
