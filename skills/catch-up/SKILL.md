@@ -11,16 +11,14 @@ description: Bring the user back up to speed with one table of what needs them, 
 
 In a `pumptrack` session, cover the project. Anywhere else, cover this session's thread, such as a sidebar's topic.
 
-Start from the user's last message before they asked. Anything still open goes in however old it is; Done covers only what finished since then.
+Start from the user's last message before they asked, or from a time they give. Anything still open goes in however old it is; Done covers only what finished since then.
 
 ## Gather
 
 Keep it read-only: change nothing, start nothing, post nothing.
 
-1. **Check the record:** commits since then, branches and worktrees with any uncommitted changes, open PRs with their checks and reviews, and the tracker if there is one. If that would fill your context, send an agent to read it and bring back only the rows.
-2. **Add what's live:** agents and sidebars still out or that reported back, and every open ask, even one raised before the user's last message. Check each against the record rather than your memory: an agent you think is running may have landed, and a PR may have merged.
-
-With no session to draw on, such as when an agent is sent for a project's catch-up, the record alone is the catch-up, starting from a time the asker gives or a day back.
+1. **Check the record:** commits since then, branches and worktrees with any uncommitted changes, open PRs with their checks and reviews, and the tracker if there is one. In a `pumptrack` session, always send an agent to read it and bring back only the rows, so you stay light. Anywhere else, send one only if reading it would fill your context.
+2. **Add what's live yourself, since an agent can't see it:** agents and sidebars still out or that reported back, and every open ask, even one raised before the user's last message. Check each against the record rather than your memory: an agent you think is running may have landed, and a PR may have merged.
 
 ## The table
 
