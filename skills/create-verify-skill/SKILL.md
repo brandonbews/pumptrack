@@ -19,11 +19,11 @@ Answer these from the code, and ask the user only what you can't find:
 - **Proof:** what can be kept, such as screenshots, terminal output, responses, logs or stored data.
 - **Side by side:** whether two copies can run at once, each with its own ports and data, and whether starting one changes anything shared, such as a database or deployment others use.
 
-If it doesn't build or start as it is, fix that or report exactly what's wrong before writing anything. Adding a tool the project doesn't have, such as a browser driver, needs the user's OK.
+If it doesn't build or start as it is, report exactly what's wrong and offer to have it fixed with `build`, before writing anything. Adding a tool the project doesn't have, such as a browser driver, needs the user's OK.
 
 ## Write the skill
 
-Name it `verify-<app>`, and put it where the project's skills are installed. Its description names the app and says to use it to prove a change in the running app, the way a user does. Fill every part with real commands from this repo, never placeholders:
+Name it `verify-<app>`, and put it where pumptrack's skills were installed for this project. Its description names the app and says to use it to prove a change in the running app, the way a user does. Fill every part with real commands from this repo, never placeholders:
 
 - **Start:** the command that brings the app up from empty, with any migrations and seed data, how to tell it's ready to use rather than just running, and how to stop it.
 - **Health check:** one read-only check that this copy is worth driving: it's up, it's running this checkout's code, and this run started it. Run it first, and again whenever something looks off. If two copies can't run side by side, say so, and never drive one this run didn't start.
@@ -48,11 +48,11 @@ If the seed data can't support a step, say why under its gotchas rather than wea
 
 ## Run it once
 
-Follow the new skill end to end: start, health check, drive one feature from the map, keep the proof, clean up, then check the proof is still there. Fix what fails, cleaning up after each failed try, and run it again. Until it has run, it's a draft.
+Follow the new skill end to end: start, health check, drive one feature from the map, keep the proof, clean up, then check the proof is still there. Fix what fails, cleaning up after each failed try, and run it again; after three tries, report what's failing instead. Until it has run, it's a draft.
 
 ## Hand it over
 
-If it's in the project, land it the way the project lands work. Add it to the project's notes for agents, the ones its instructions point to, so whoever builds a change knows to use it.
+If it's in the project, land it the way the project lands work, with commits that name no agent, as `build` says. Add it to the project's notes for agents, the ones its instructions point to, so whoever builds a change knows to use it.
 
 ## Report
 

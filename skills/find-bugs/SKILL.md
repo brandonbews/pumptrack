@@ -11,7 +11,7 @@ Look only for bugs: code that does something other than what's intended. That me
 
 ## What you need
 
-The change (a diff, branch, PR or commits), and the goal if there is one, since it says what's intended.
+The change (a diff, branch, PR or commits), the goal if there is one, since it says what's intended, and any limits, such as files to leave alone.
 
 ## Steps
 
@@ -23,7 +23,7 @@ The change (a diff, branch, PR or commits), and the goal if there is one, since 
    2. Pointed at the line: a real `path:line`, or the library's own source.
    3. Traced: walked the bad case step by step, and it reaches the failure.
    4. Ran it: a script or test that calls the real code fails.
-   5. Reproduced it in the running app.
+   5. Reproduced it in the running app, started the way the project's notes say.
 
    Scripts go in a temp folder, not the project. A suspect that tracing shows can't happen is cleared.
 5. **Find the cause.** For each bug, name the root cause and check whether the same pattern appears elsewhere.

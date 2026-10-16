@@ -7,10 +7,6 @@ description: Spin a deep topic off into a fresh session the user works in direct
 
 **Your goal:** give a deep topic a session of its own, so the user can work through it there while yours stays light and keeps going.
 
-## When
-
-Offer a sidebar when a topic goes deep: a long grill on a plan, an open-ended exploration, anything that needs a lot of back and forth with the user. Use it too whenever the user asks for a prompt for another session, such as one in another project.
-
 ## Write the brief
 
 The new session starts knowing nothing, so the brief stands alone. Write it to a file in a temp folder, covering:
@@ -28,7 +24,7 @@ If your setup has a way to open a new session with the brief already sent, such 
 
 Otherwise, give the user a one-line command to start a fresh session with: "Read <path> and follow it". Never a block to copy: long text selected from a terminal can arrive with characters missing, and the next agent fills the gaps silently, while a damaged path fails loudly.
 
-Either way, keep it in your "Needs you" list until the user has started it.
+Either way, keep it in your "Needs you" list until the user says they've started it, or it reports back.
 
 ## While it runs
 

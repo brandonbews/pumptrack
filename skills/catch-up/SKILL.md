@@ -11,7 +11,7 @@ description: Bring the user back up to speed with one table of what needs them, 
 
 In a `pumptrack` session, cover the project. Anywhere else, cover this session's thread, such as a sidebar's topic.
 
-Start from the user's last message before they asked, or from a time they give. Anything still open goes in however old it is; Done covers only what finished since then.
+Start from the user's last message before they asked, or from a time they give; in a fresh session, where there's none, start a day back and say so. Anything still open goes in however old it is; Done covers only what finished since then.
 
 ## Gather
 
@@ -33,4 +33,4 @@ Start with one line saying how many things need the user, or that nothing does. 
 
 Write each row in plain words that stay true when read alone. Keep the columns as they are, since tables from several projects may be combined. Nothing goes after the table.
 
-Show it with `show-user`, so it reaches the user the way they like reports. When another session asked for it, send it the table itself.
+Show it with `show-user`, so it reaches the user the way they like reports. When another session asked for it, send it the table, with whatever else it asked for, such as the project folder.

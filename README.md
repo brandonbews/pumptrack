@@ -17,35 +17,53 @@ The picture is a pump track whose lines branch apart and all come back to the st
 | A line | A path a rider takes through the skills, such as build, then review, then a bug check |
 | A rider | An agent pumptrack sends out |
 | A run | One rider's trip down one line. A rider comes back, reports, and may go out on another run |
-| The lookout | `pumptrack-lookout`, one agent in the folder above all your projects. It asks each running session to catch it up and combines the answers on one page |
+| The lookout | `pumptrack-lookout`, one agent in the folder above all your projects. It asks each running session to catch it up, combines the answers on one page, and passes work you direct to each project's session |
 
 ### V0.1
 
 A few small skills that call each other, enough to use on real work. Setting up installs the skills, learns how the project checks, tracks and lands work, keeps that in notes the project's instructions point to, and offers to write the project a skill that drives the app the way a user does to prove a change works. Review is one skill whether it checks a builder's change before landing, someone's PR or a re-review; only the context it's given changes. A thin `review-pr` skill handles the GitHub side. On a first review it posts the findings you pick in your name; when you've reviewed before, it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and applies what you accept. Builders follow the principles, and reviewers use them to keep only the findings that matter. When a topic goes deep, pumptrack opens a sidebar you work in directly, which tells pumptrack when it's done. Long sessions carry on through compaction. Before you compact or clear, a handoff writes down what's still live, and pumptrack picks it up when it starts again. When an agent has something for you to read, such as a file, a diff or a report, it shows it the way you like, asking the first time.
 
-When you come back to a session you've lost track of, run `/catch-up`: one table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong. In pumptrack it covers the project, and anywhere else the thread. From the folder above all your projects, the lookout asks each running session to catch it up and combines the answers on one page you can pin.
+When you come back to a session you've lost track of, run `/catch-up`: one table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong. In pumptrack it covers the project, and anywhere else the thread. From the folder above all your projects, the lookout asks each running session to catch it up and combines the answers on one page you can pin. You can direct work across projects from there too, which it passes to each project's session.
+
+A session:
 
 ```mermaid
 flowchart LR
-  you(["You"]) <-->|talk and plan| pt["pumptrack"]
-  you <-->|catch up| lookout["lookout, above<br/>all your projects"]
-  you -->|"set up a<br/>project, once"| setup["setup-pumptrack"]
-  setup -->|offers| verify["create-verify-skill"]
-  lookout <-->|"asks for<br/>a catch-up"| pt
+  you(["You"]) <-->|"talk and plan"| pt["pumptrack"]
+  you -->|"set up a<br/>project, once"| setup["setup-pumptrack"] -->|"offers"| verify["create-verify-skill"]
+  pt -->|"sends riders,<br/>hears back"| riders["riders, one<br/>line each"]
+  pt -->|"briefs a deep topic,<br/>hears when it's done"| sidebar["sidebar, which you<br/>work in directly"]
+  sidebar -->|"such as"| grill["grill"]
+  pt -->|"before a compact,<br/>picked up after"| handoff["handoff"]
   pt -->|"when you're back"| catchup["catch-up"]
-  pt -->|"for you<br/>to read"| show["show-user"]
-  pt <-->|"briefs,<br/>hears it's done"| sidebar["sidebar, such as<br/>grilling a plan"]
-  pt <-->|"before a compact,<br/>picks it up after"| handoff["handoff"]
-  pt <-->|"sends a rider,<br/>hears back"| build["build"]
-  build <-->|"fresh eyes<br/>before landing"| review["review"]
-  pt <-->|"a PR, first look<br/>or re-review"| prreview["review-pr"]
+  catchup -->|"shows you<br/>the table"| show["show-user"]
+```
+
+Landing a change, the main line:
+
+```mermaid
+flowchart LR
+  pt["pumptrack"]
+  pt -->|"a change"| build["build"]
+  build -->|"fresh eyes<br/>before landing"| review["review"]
+  review -->|"runs alongside"| bugs["find-bugs"]
+  pt -->|"someone's PR"| prreview["review-pr"]
   prreview --> review
-  pt <-->|"feedback on<br/>your PR"| feedback["address-pr-feedback"]
-  feedback --> build
-  review <--> bugs["find-bugs"]
-  build -.-> principles[["principles"]]
-  review -.-> principles
-  bugs -.-> principles
+  pt -->|"feedback on<br/>your PR"| feedback["address-pr-feedback"]
+  feedback -->|"accepted fixes"| build
+  feedback -->|"claimed bugs"| bugs
+  build -->|"follows"| principles[["principles"]]
+  review -->|"follows"| principles
+```
+
+Across projects:
+
+```mermaid
+flowchart TD
+  you(["You"]) <-->|"one page to catch up,<br/>and work you direct"| lookout["pumptrack-lookout, in the<br/>folder above your projects"]
+  lookout <-->|"asks for a catch-up,<br/>passes your requests on"| a["a project's<br/>pumptrack"]
+  lookout <--> b["another's"]
+  lookout <--> c["..."]
 ```
 
 ### V1
@@ -58,50 +76,27 @@ Solid pieces are V0.1, and dashed pieces come later.
 
 ```mermaid
 flowchart TD
-  you(["You"])
-  lookout["lookout"]
-  page["one page to catch up"]
-  sources[("Slack, Jira and other<br/>sources you pick")]
-  others["other projects' pumptracks"]
+  you(["You"]) <-->|"talk and plan"| pt
+  you <-->|"catch up,<br/>direct work"| lookout
+  pt <-->|"catch-ups<br/>and requests"| lookout["lookout, above<br/>all your projects"]
+  lookout -.->|reads| sources[("Slack, Jira and other<br/>sources you pick")]
 
   subgraph track["A project: one track"]
     pt["pumptrack"]
-    subgraph sides["Sidebars, worked with you directly"]
+    pt -->|"riders go out<br/>and report back"| lines
+    pt -->|"briefs, hears<br/>it's done"| sides
+    pt --> records[("tracker and docs")]
+    subgraph lines["Skills riders use"]
+      direction TB
+      now["build, review,<br/>find-bugs, review-pr,<br/>address-pr-feedback,<br/>principles"]
+      now ~~~ audit["audit"]
+    end
+    subgraph sides["Sidebars you work in"]
       direction TB
       grill["grill"]
-      design["design round trip"]
-    end
-    records[("tracker and docs")]
-    handoff["handoff"]
-    setup["setup-pumptrack: how to check,<br/>track and land work"]
-    notes[("notes for agents")]
-    principles[["principles"]]
-    subgraph skills["Skills riders use"]
-      direction TB
-      build["build"]
-      review["review"]
-      bugs["find-bugs"]
-      prreview["review-pr"]
-      catchup["catch-up"]
-      show["show-user"]
-      audit["audit"]
-      feedback["address-pr-feedback"]
+      grill ~~~ design["design round trip"]
     end
   end
-
-  you <--> lookout
-  you <--> pt
-  lookout <-->|"asks for<br/>a catch-up"| pt
-  lookout <--> others
-  lookout --> page
-  lookout -.->|reads| sources
-  pt <-->|"riders go out<br/>and report back"| skills
-  pt <-->|"briefs,<br/>hears it's done"| sides
-  pt <--> handoff
-  pt --> records
-  sides --> records
-  setup -->|writes| notes
-  principles -.-> skills
 
   classDef later stroke-dasharray: 5 4
   class sources,design,audit later

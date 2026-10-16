@@ -15,7 +15,7 @@ description: Show the user something to look at, such as a file, a diff or a rep
 
 ## Their way
 
-How someone likes to see things differs by person and machine, not by project, so it lives in the user's own agent instructions, the ones every session on their machine loads. Look there for this kind of thing and do what it says, such as a viewer in a new terminal tab, their editor, or a page in the browser. Where the project's instructions rule something out, such as hosted pages, they win.
+How they like to see each kind of thing lives in the user's own agent instructions, the ones every session on their machine loads. Look there for this kind of thing and do what it says, such as a viewer in a new terminal tab, their editor, or a page in the browser. Where the project's instructions rule something out, such as hosted pages, they win.
 
 Then tell the user where it is, such as the tab's number and label, or the link.
 
