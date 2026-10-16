@@ -11,6 +11,8 @@ description: Go through the open feedback on the user's own GitHub pull request,
 
 The PR: a number or URL. If you weren't told, use the current branch's PR, and say so.
 
+Sent back with the user's answers to a plan, skip to Act on it.
+
 ## Gather
 
 Use `gh` and GitHub's API. Collect what's still open:

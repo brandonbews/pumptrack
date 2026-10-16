@@ -27,4 +27,4 @@ description: Gather a session's live state into a handoff file, so the work carr
 
 ## Pick one up
 
-When a session starts, look for a handoff for this project. If there's one, read it and the files it names, delete it, and tell the user what you picked up. Start with the outcome in one line, then a "Needs you" list of the open asks, or "Nothing".
+When a session starts, look for a handoff for this project. If there's one, read it, and what it names only as far as you need, sending an agent for anything bulky. Delete it, and tell the user what you picked up. Start with the outcome in one line, then a "Needs you" list of the open asks, or "Nothing".
