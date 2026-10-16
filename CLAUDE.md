@@ -7,6 +7,7 @@ Open-source agent skills for orchestrating coding agents. An agent installs them
 - `skills/<name>/SKILL.md`: one folder per skill. Only `skills/` gets copied into projects, so repo files (README, this file) stay outside it.
 - `pumptrack-lookout/SKILL.md`: the lookout, kept beside `skills/` because it goes in the folder above the user's projects, not into each one.
 - `evals/`: scripted checks of how the skills behave, run through Claude Code's headless mode. Each run uses real model time, about $3 at API prices, so run one after changing the skill it checks. `python3 evals/check_delegation.py` checks the eval's own pass and fail logic against hand-made states, at no model cost.
+- `docs/agents/workflow.md`: how to check, track and land work here.
 - `internal/`: a gitignored clone of the private `brandonbews/pumptrack-internal` repo, which holds the design notes. It may be missing, and that's fine. To set it up on a computer, follow the README's "Private notes".
 
 ## Rules
