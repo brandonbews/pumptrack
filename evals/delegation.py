@@ -4,7 +4,9 @@
 Builds a small throwaway project with the skills installed, starts /pumptrack
 in headless Claude Code sessions, and makes requests that never mention
 subagents. Then it looks at the orchestrator's own tool calls: it should send
-an agent, not edit files or dig through the project itself.
+an agent, not edit files or dig through the project itself. Some cases also
+check what the session left behind: a handoff written and picked up, a change
+landed on a branch from a worktree, or one line changed in the tracker.
 
 The sessions leave out your user-level setup (personal skills, CLAUDE.md and
 rules, settings and MCP servers) and auto memory, so the results reflect
