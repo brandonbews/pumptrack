@@ -8,10 +8,12 @@ an agent, not edit files or dig through the project itself.
 
 The sessions leave out your user-level setup (personal skills, CLAUDE.md and
 rules, settings and MCP servers) and auto memory, so the results reflect
-pumptrack alone and don't depend on who runs them. They may edit files and run
-git inside the throwaway project; anything else that would ask for permission
-is denied. A full run uses about $2 at API prices; on a subscription that
-counts toward the plan's usage limits rather than being billed.
+pumptrack alone and don't depend on who runs them. They may edit files, run git
+and run the project's tests inside the throwaway project; anything else that
+would ask for permission is denied. Nothing can write into .git, so keeping a
+handoff out of git passes on the attempt. A full run uses about $3 at API prices; on a
+subscription that counts toward the plan's usage limits rather than being
+billed.
 
     python3 evals/delegation.py                  # every case
     python3 evals/delegation.py fix tracker      # some cases
@@ -21,6 +23,7 @@ counts toward the plan's usage limits rather than being billed.
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -29,9 +32,12 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
+ITEM = "SHOP-041"  # an open item in the tracker
 
 # Each case starts with /pumptrack, then sends its turns. Only the last turn is
-# judged, and the flag says whether that turn must send an agent.
+# judged, and the flag says whether that turn must send an agent. A /clear turn
+# ends the session, after a look at what it left behind, and the turns after it
+# run in a fresh one.
 CASES = {
     "start": ([], False),
     "fix": (["Fix the typo in the README."], True),
@@ -44,7 +50,24 @@ CASES = {
         "/compact",
         "Fix the typo in the comment at the top of src/cart.py.",
     ], True),
+    "handoff-roundtrip": ([
+        "Fix the typo in the README.",
+        "I'm about to clear. Write a handoff.",
+        "/clear",
+        "/pumptrack",
+    ], False),
+    "build-worktree": (["Add a DELETE /cart route that empties a cart."], True),
+    # A small tracker edit it may make itself, after one targeted search or a read
+    # of that part, or send an agent for; either passes.
+    "tracker-edit": ([f"Mark {ITEM} done in the tracker."], False),
 }
+
+# Where a case differs: what the project says about landing work, whether the
+# orchestrator may write a line in the tracker itself, and how many calls of its
+# own it gets when checking the agent's branch is fair.
+LANDING = {"build-worktree": "Land work as a commit on a branch off main."}
+MAY_EDIT_TRACKER = {"tracker-edit", "build-worktree"}
+MAX_CALLS = {"build-worktree": 4}
 
 AGENT_TOOLS = {"Agent", "Task"}
 EDIT_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
@@ -54,9 +77,10 @@ MAX_OWN_CALLS = 3
 MAX_OWN_READING = 5000  # characters of tool output, outside what its agents report
 
 
-def make_project(root):
+def make_project(root, landing):
     files = {
-        "CLAUDE.md": "# Tiny Shop\n\nWork is tracked in TRACKER.md. Land work as a commit on main.\n",
+        "CLAUDE.md": f"# Tiny Shop\n\nWork is tracked in TRACKER.md. Tests run with `python3 -m unittest`. {landing}\n",
+        ".gitignore": "__pycache__/\n.claude/worktrees/\n",
         "README.md": "# Tiny Shop\n\nA small shop app wiht a cart, checkout and receipts.\n",
         "src/__init__.py": "",
         "src/app.py": '''"""Entry point: maps each route to its handler."""
@@ -153,6 +177,26 @@ def delete(kind, key):
 def next_id(kind):
     return len(_DATA.get(kind, {})) + 1
 ''',
+        "tests/__init__.py": "",
+        "tests/test_cart.py": '''import unittest
+
+from src import app, storage
+
+
+class CartTests(unittest.TestCase):
+    def setUp(self):
+        storage._DATA.clear()
+
+    def test_adding_a_sku_again_raises_its_quantity(self):
+        app.handle("POST /cart/items", {"cart_id": 1, "sku": "tee"})
+        response = app.handle("POST /cart/items", {"cart_id": 1, "sku": "tee", "quantity": 2})
+        self.assertEqual(response["cart"], {"tee": 3})
+
+    def test_removing_a_sku_drops_it(self):
+        app.handle("POST /cart/items", {"cart_id": 1, "sku": "mug"})
+        response = app.handle("DELETE /cart/items", {"cart_id": 1, "sku": "mug"})
+        self.assertEqual(response["cart"], {})
+''',
         "TRACKER.md": tracker(),
     }
     for path, text in files.items():
@@ -183,7 +227,8 @@ def tracker():
 
 def run_turn(cwd, prompt, session, model, log):
     cmd = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose",
-           "--permission-mode", "acceptEdits", "--allowedTools", "Bash(git *)",
+           "--permission-mode", "acceptEdits",
+           "--allowedTools", "Bash(git *)", "Bash(python3 -m unittest *)",  # git, and Tiny Shop's own test command
            "--permission-prompts", "none",
            "--setting-sources", "project,local", "--strict-mcp-config",
            "--max-budget-usd", "5"]
@@ -217,9 +262,9 @@ def run_turn(cwd, prompt, session, model, log):
 
 
 def own_activity(events):
-    """The orchestrator's own tool calls, and how many characters its own reading
-    brought back. A subagent's events carry the id of the call that started it."""
-    calls, names_by_id, reading = [], {}, 0
+    """The orchestrator's own tool calls, and what its own reading brought back.
+    A subagent's events carry the id of the call that started it."""
+    calls, names_by_id, reading = [], {}, ""
     for e in events:
         if e.get("parent_tool_use_id"):
             continue
@@ -233,7 +278,7 @@ def own_activity(events):
                 content = block.get("content")
                 if isinstance(content, list):
                     content = "".join(c.get("text", "") for c in content if isinstance(c, dict))
-                reading += len(content or "")
+                reading += content or ""
     return calls, reading
 
 
@@ -243,30 +288,123 @@ def describe(name, args, root):
     return f"{name}({detail[:50]})" if detail else name
 
 
+def git(root, *args):
+    return subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True).stdout.strip()
+
+
+def tracker_write(name, args):
+    """A write to the tracker, by an edit tool or a shell redirect."""
+    if name in EDIT_TOOLS:
+        return Path(str(args.get("file_path", ""))).name == "TRACKER.md"
+    return name == "Bash" and bool(re.search(r">>?\s*\S*TRACKER\.md", args.get("command", "")))
+
+
+def handoff_written(root, events):
+    """Before a clear, the session leaves a handoff for the next one, kept out of
+    git. The log folder keeps a copy, since the next session deletes it."""
+    handoff = root / ".pumptrack" / "handoff.md"
+    if not handoff.exists():
+        return ["wrote no handoff"]
+    shutil.copy(handoff, root.parent / f"{root.name}-handoff.md")
+    problems = []
+    exclude = root / git(root, "rev-parse", "--git-path", "info/exclude")
+    listed = exclude.exists() and ".pumptrack" in exclude.read_text()
+    tried = any("info/exclude" in str(args) for _, args in own_activity(events)[0])
+    if not listed and not tried:
+        problems.append("didn't keep the handoff out of git")
+    last = handoff.read_text().strip().splitlines()[-1].replace("’", "'").lower()
+    if "delete this file once you've picked it up" not in last:
+        problems.append("the handoff doesn't end by asking to be deleted")
+    return problems
+
+
+def handoff_picked_up(root, events):
+    """A fresh session reads the handoff, removes it and reports in pumptrack's
+    shape: an outcome line, then a "Needs you" list."""
+    problems = []
+    copy = root.parent / f"{root.name}-handoff.md"
+    handoff = copy.read_text().splitlines() if copy.exists() else []
+    reading = own_activity(events)[1]
+    if not all(line in reading for line in handoff if line.strip()):
+        problems.append("didn't read the handoff itself")
+    if (root / ".pumptrack" / "handoff.md").exists():
+        problems.append("left the handoff in place")
+    text = next((e.get("result") or "" for e in events if e.get("type") == "result"), "")
+    lines = text.strip().splitlines()
+    if not lines or (len(lines) > 1 and lines[1].strip() and "needs you" not in lines[1].lower()):
+        problems.append("its first message doesn't start with a one-line outcome")
+    if "needs you" not in text.lower():
+        problems.append('its first message has no "Needs you" list')
+    return problems
+
+
+def only_the_tracker(root):
+    """Nothing in the checkout differs from the start but the tracker, committed or not."""
+    base = git(root, "rev-list", "--max-parents=0", "HEAD")
+    changed = set(git(root, "diff", "--name-only", base).split()) | set(
+        git(root, "ls-files", "--others", "--directory", "--no-empty-directory", "--exclude-standard").split())
+    return [f"changed {', '.join(sorted(stray))}"] if (stray := changed - {"TRACKER.md"}) else []
+
+
+def landed_on_branch(root, events):
+    """A change that lands on a new branch is built in a worktree, which is gone
+    afterwards, and the main checkout is untouched beyond a line in the tracker."""
+    branches = git(root, "for-each-ref", "--format=%(refname:short)", "refs/heads").split()
+    if not any(b != "main" and git(root, "rev-list", f"main..{b}") for b in branches):
+        return ["setup: no branch was committed, so there was nothing to check"]
+    problems = []
+    if git(root, "branch", "--show-current") != "main":
+        problems.append("left the main checkout off main")
+    problems += only_the_tracker(root)
+    if len(git(root, "worktree", "list").splitlines()) > 1:
+        problems.append("left a worktree behind")
+    return problems
+
+
+def tracker_marked(root, events):
+    """Marking an item done changes that item in the tracker and nothing else."""
+    problems = only_the_tracker(root)
+    item = re.search(rf"^## {ITEM}\b.*?(?=^## |\Z)", (root / "TRACKER.md").read_text(), re.S | re.M)
+    if not item or not re.search(r"status:\s*done", item.group(), re.I):
+        problems.append(f"{ITEM} isn't marked done")
+    return problems
+
+
+CHECKS = {"handoff-roundtrip": handoff_picked_up, "build-worktree": landed_on_branch, "tracker-edit": tracker_marked}
+
+
 def run_case(name, turns, must_delegate, model, workdir):
     root = workdir / name
     root.mkdir()
-    make_project(root)
-    session, cost, problems = None, 0, []
+    make_project(root, LANDING.get(name, "Land work as a commit on main."))
+    session, cost, spent, problems = None, 0, 0, []
     for i, prompt in enumerate(["/pumptrack"] + turns):
+        if prompt == "/clear":
+            problems += handoff_written(root, events)
+            session, cost, spent = None, 0, spent + cost
+            continue
         events, session, session_cost, failure = run_turn(root, prompt, session, model, workdir / f"{name}-{i}.jsonl")
         cost = session_cost or cost  # a running total for the session, not this turn's share
         if failure:
             problems.append(f"turn {i} {' '.join(failure.split())[:200]}")
             break
     calls, reading = own_activity(events)
-    names = [n for n, _ in calls]
-    own_calls = sum(n in WORK_TOOLS for n in names)
-    if must_delegate and not failure and not any(n in AGENT_TOOLS for n in names):
+    # Looking for a handoff, reading it and removing it is the orchestrator's own
+    # job, and so is a line in the tracker where the case allows one.
+    own = [(n, a) for n, a in calls if ".pumptrack" not in str(a) and not (name in MAY_EDIT_TRACKER and tracker_write(n, a))]
+    own_calls = sum(n in WORK_TOOLS for n, _ in own)
+    if must_delegate and not failure and not any(n in AGENT_TOOLS for n, _ in calls):
         problems.append("never sent an agent")
-    if any(n in EDIT_TOOLS for n in names):
+    if any(n in EDIT_TOOLS for n, _ in own):
         problems.append("edited files itself")
-    if own_calls > MAX_OWN_CALLS:
+    if own_calls > MAX_CALLS.get(name, MAX_OWN_CALLS):
         problems.append(f"made {own_calls} calls of its own work")
-    if reading > MAX_OWN_READING:
-        problems.append(f"read {reading:,} characters itself")
+    if len(reading) > MAX_OWN_READING:
+        problems.append(f"read {len(reading):,} characters itself")
+    if name in CHECKS and not failure:
+        problems += CHECKS[name](root, events)
     summary = "; ".join(problems) or ("sent an agent" if must_delegate else "stayed light")
-    return name, not problems, summary, [describe(n, a, root) for n, a in calls], reading, cost
+    return name, not problems, summary, [describe(n, a, root) for n, a in calls], len(reading), spent + cost
 
 
 def main():
