@@ -23,6 +23,7 @@ Change nothing yet.
   - **The app:** whether users run something, such as a site, a CLI or an API, and whether agents have a way to start it, drive it the way a user does and keep proof.
 - **The user and the machine:** these differ by person and machine, not by project, so they belong in the user's own setup. Check their own settings, not your environment, which whoever started you may have set.
   - **Seeing things:** how they like to see Markdown, code, diffs and reports, as `show-user` asks.
+  - **Opening sessions:** how they'd like `sidebar` to open a new session with its brief already sent, such as a new tab in their terminal multiplexer, or just a one-line command to run. It looks in their own agent instructions, so the answer goes there.
   - **How deep agents go:** the deepest chain is four agents below the session: `address-pr-feedback`, `build`, `review` and `find-bugs`, under `pumptrack`. Some tools cap it lower, as Claude Code's `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` does at three by default. Below four the skills still work, but the last step loses its fresh context.
   - **The lookout:** `pumptrack-lookout`, in pumptrack's repo, catches the user up across all their projects and lets them direct work in any of them. It goes in the skills folder of the folder that holds their projects, not in any one project.
 

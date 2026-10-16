@@ -20,7 +20,7 @@ The new session starts knowing nothing, so the brief stands alone. Write it to a
 
 ## Open it
 
-If your setup has a way to open a new session with the brief already sent, such as a terminal multiplexer's command line, use it. Start the session under a name that marks it as a sidebar, such as `<project>-sidebar-<topic>`, and tell the user where it is.
+If the user's own agent instructions say how to open a new session with the brief already sent, such as from a terminal multiplexer's command line, do it that way. Start the session under a name that marks it as a sidebar, such as `<project>-sidebar-<topic>`, and tell the user where it is.
 
 Otherwise, give the user a one-line command to start a fresh session with: "Read <path> and follow it". Never a block to copy: long text selected from a terminal can arrive with characters missing, and the next agent fills the gaps silently, while a damaged path fails loudly.
 
