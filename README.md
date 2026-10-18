@@ -66,6 +66,7 @@ flowchart TD
 | `review` | Reviews a change against its goal and the principles, and reports only the findings worth acting on | `build` and `review-pr`, or you |
 | `find-bugs` | Finds the real bugs in a change, proves each as far as is cheap, and says how sure it is | `review` and `address-pr-feedback`, or you |
 | `principles` | The coding principles builders follow and reviewers judge by | `build` and `review` |
+| `communication` | How agents talk to you and report back: the outcome first, a "Needs you" list, and your calls left to you | Skills that talk to you or report back, such as `pumptrack`, `build` and `review`, and your own instructions if you point them to it |
 | `review-pr` | The GitHub side of reviewing a PR: posts the findings you pick as a pending review in your name, and on a re-review checks whether your comments were resolved | `pumptrack`, or you |
 | `address-pr-feedback` | Goes through the open feedback on your PR, plans a fix or a reply for each with you, and has each accepted fix built as its own commit | `pumptrack`, or you |
 | `sidebar` | Spins a deep topic off into a fresh session you work in directly, which reports back when it's done | `pumptrack`, and the lookout |

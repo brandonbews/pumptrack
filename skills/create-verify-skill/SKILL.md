@@ -56,4 +56,4 @@ If it's in the project, land it the way the project lands work, with commits tha
 
 ## Report
 
-Start with the outcome in one line, such as "`verify-shop` written and run: drove checkout, proof kept". Then a "Needs you" list of every question and action for the user, or "Nothing". Then what the skill covers, what it leaves out, such as other surfaces or features not yet mapped, and anything the run couldn't reach.
+Report the way `communication` says, with an outcome such as "`verify-shop` written and run: drove checkout, proof kept". Then what the skill covers, what it leaves out, such as other surfaces or features not yet mapped, and anything the run couldn't reach.

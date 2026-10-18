@@ -13,7 +13,7 @@ Read the plan, the code it touches, the tracker, and the project's glossary if i
 
 ## Ask in rounds
 
-Map the plan as a tree of decisions, each branching into the ones that hang off it. Each round, ask every question whose prerequisites are settled, and none that turns on another still open. Number each, give your recommended answer, and word it so "yes" accepts it. Use an interactive prompt if you have one, with your recommendation first. Ask only about decisions the plan turns on; when the user says a thing doesn't matter, record that as their call and move on.
+Map the plan as a tree of decisions, each branching into the ones that hang off it. Each round, ask every question whose prerequisites are settled, and none that turns on another still open. Number each, and give your recommended answer the way `communication` says. Ask only about decisions the plan turns on; when the user says a thing doesn't matter, record that as their call and move on.
 
 Each round's answers open the decisions that hung on them, so ask those next. A lookup still running holds back only the questions that need it.
 
@@ -34,4 +34,4 @@ You're done when no decision is left open and the user confirms you understand e
 
 ## Report
 
-Start with the outcome in one line, such as "Plan written, 4 tickets". Then a "Needs you" list of every question and action for the user, or "Nothing". Then where the plan and tickets are, and the terms added to the glossary.
+Report the way `communication` says, with an outcome such as "Plan written, 4 tickets". Then where the plan and tickets are, and the terms added to the glossary.

@@ -26,7 +26,7 @@ Change nothing and post nothing while reviewing. If asked afterward to fix findi
 
 ## Report
 
-Start with the verdict in one line: ready, meaning nothing must be fixed, or not and why. Then a "Needs you" list of every question and action for the user, or "Nothing". Then the findings, grouped:
+Report the way `communication` says, with the verdict as the outcome: ready, meaning nothing must be fixed, or not and why. Then the findings, grouped:
 
 - **Must fix:** blocks landing. The goal not met, security holes, tests that hide a defect, and bugs bad enough to block.
 - **Should fix:** worth fixing now, because it will cost later.

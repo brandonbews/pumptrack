@@ -30,7 +30,7 @@ The change (a diff, branch, PR or commits), the goal if there is one, since it s
 
 ## Report
 
-Start with the outcome in one line, such as "2 bugs, 1 proven by a failing test". Then a "Needs you" list of every question and action for the user, or "Nothing": usually questions about intended behavior or how the code is deployed, which decide whether something is a bug or how bad it is. Then:
+Report the way `communication` says, with an outcome such as "2 bugs, 1 proven by a failing test". The asks are usually questions about intended behavior or how the code is deployed, which decide whether something is a bug or how bad it is. Then:
 
 - **Bugs:** traced or better. For each: `path:line`, how it breaks (what input or state leads to what wrong result), how bad it is, how sure you are, with the proof pasted for anything you ran, and the fix.
 - **Unconfirmed:** suspects only pointed at, each with the cheapest way to settle it.

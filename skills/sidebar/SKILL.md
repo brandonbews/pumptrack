@@ -16,7 +16,7 @@ The new session starts knowing nothing, so the brief stands alone. Write it to a
 - **What to read first,** and the sources to draw on.
 - **What's settled,** so it isn't reopened, and **what's open** for the user to decide.
 - **How to run it:** the steps, where to leave the outcome, and how to land what it changes.
-- **Reporting back:** its last step is a short message to this session by name, with the outcome in one line, a "Needs you" list or "Nothing", and a line or two on where things are. If it can't send one, it tells the user so they can pass it on.
+- **Reporting back:** its last step is a short message to this session by name, reporting the way `communication` says, with a line or two on where things are. If it can't send one, it tells the user so they can pass it on.
 
 ## Open it
 
