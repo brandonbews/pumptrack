@@ -13,7 +13,7 @@ Message every other session running on this machine, asking it for a catch-up wi
 
 Ask them all, without sorting them first, since `catch-up` scopes itself to its session.
 
-The user may have walked away, so don't stop the catch-up to ask them anything. A session waiting on the user's input, such as a question or an approval, can't answer until they give it, so don't wait for it: give it a Needs you row at the top of the report saying so, with what it's waiting on if you can tell. Give the rest a few minutes, then report with what's come in, a row for each session that hasn't answered, and pass later answers on as they arrive. If you can't message other sessions, say so, and suggest running `catch-up` in each.
+The user may have walked away, so don't stop the catch-up to ask them anything. A session waiting on the user's input, such as a question or an approval, can't answer until they give it, so don't wait for it: give it a Needs you row at the top of the report saying so, with what it's waiting on if you can tell. Give the rest a few minutes, then report with what's come in, a row for each session that hasn't answered, and pass later answers on as they arrive.
 
 ## Combine
 
