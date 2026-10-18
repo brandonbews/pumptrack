@@ -11,13 +11,12 @@ description: Build a change and land it, from gathering what's asked through a f
 
 - **The work:** a ticket, plan, PR comment, review finding or the brief itself. Given a ticket reference, fetch it from the tracker.
 - **Where it lands:** from the brief, else the project's instructions. If neither says, ask.
-- **The project's conventions:** its agent instructions, contributing guide, and how it runs its tests, lint and formatting.
 
 ## Steps
 
 1. **Gather the requirements.** Read the work wherever it's described, then the code it touches, and say what done looks like. Put the user's calls, such as scope or how something should behave, to them before you build, as `communication` says.
 2. **Build it** following `principles`, in small steps that each end in a check. For a bug, write a failing test first when one is cheap. Work on any branch the checkout isn't already on is built in a worktree of your own, inside the project in a folder git ignores, such as the one your tool uses for worktrees, so the user's checkout and other agents are untouched; remove the worktree once your work is committed, leaving the branch.
-3. **Prove it works** with what the project has: its tests, lint and formatting, and driving the app if the project has a way to. Note what ran and what it showed.
+3. **Prove it works** with what the project has: its tests, lint and formatting, and driving the app if the project has a way to.
 4. **Get a fresh review** of anything beyond a typo or a one-line fix: hand the goal and the change to `review` in a fresh agent. If you can't start one, run it yourself and say so. Fix what must be fixed, and what should be fixed within the goal, then prove it again.
 5. **Land it** (below).
 
