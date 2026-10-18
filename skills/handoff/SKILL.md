@@ -21,7 +21,6 @@ description: Gather a session's live state into a handoff file, so the work carr
    - Where things stand: what's done, and what's next.
    - Every open ask: the questions and actions waiting on the user.
    - Each agent and sidebar still out: its task, and where its work is, such as a branch or a PR.
-   - How the user works, where the project's instructions don't say.
    - Last: "Delete this file once you've picked it up."
 4. **Tell the user** it's ready, and how to pick it up: after a compact or a clear, start the session's skill again, such as `/pumptrack`. In any other session: "Read <path> and follow it".
 
