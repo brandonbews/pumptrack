@@ -28,4 +28,4 @@ Either way, keep it in your "Needs you" list until the user says they've started
 
 ## While it runs
 
-Keep going on your own work. When it reports back, pass its "Needs you" on to the user, and read its outcome only when you need it.
+When it reports back, pass its "Needs you" on to the user, and read its outcome only when you need it.
