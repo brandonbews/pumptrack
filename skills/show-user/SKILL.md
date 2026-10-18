@@ -21,7 +21,7 @@ Then tell the user where it is, such as the tab's number and label, or the link.
 
 ## Nothing set yet
 
-If you can talk to the user, ask how they'd like to see this kind of thing, offering what you find on their machine: a terminal multiplexer, viewers for files and diffs, an editor, a page, or the conversation itself. Show it their way, then offer to save the answer to their own instructions so no session asks again. Write it only with their OK.
+If you can talk to the user, ask how they'd like to see this kind of thing, offering what you find on their machine: a terminal multiplexer, viewers for files and diffs, an editor, a page, or the conversation itself. Show it their way, then offer to save the answer to their own instructions so no session asks again.
 
 If you can't ask, as when another session sent you, fall back:
 
