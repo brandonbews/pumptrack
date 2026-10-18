@@ -15,7 +15,7 @@ Sent back with the user's answers to a plan, skip to Act on it.
 
 ## Gather
 
-Use `gh` and GitHub's API. Collect what's still open:
+Collect what's still open:
 
 - Inline threads not yet resolved whose last comment isn't the user's, each with its replies as one item (GitHub's GraphQL API has the thread state). Flag any that a later push made outdated.
 - Review summaries and conversation comments the user hasn't answered.
