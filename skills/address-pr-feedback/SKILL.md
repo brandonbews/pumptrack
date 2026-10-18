@@ -34,7 +34,7 @@ Show the user each item with its author and `path:line`, and one of:
 - **Push back:** why not, as you'd put it to the reviewer.
 - **Ask:** the question for the user.
 
-Change nothing until the user approves the plan. If you can't talk to the user, as when another agent sent you, stop here and report the plan. You'll be sent back with their answers.
+Change nothing until the user approves the plan. If you can't ask them, stop here and report the plan. You'll be sent back with their answers.
 
 ## Act on it
 
@@ -45,4 +45,4 @@ Change nothing until the user approves the plan. If you can't talk to the user, 
 
 ## Report
 
-Start with the outcome in one line, such as "5 open items on #42: 3 to fix, 1 to push back, 1 for you". Then a "Needs you" list of every question and action for the user, or "Nothing", such as approving the plan, pushing, posting the replies and re-requesting review. Then the plan, or once acted on, a line per commit, the drafted replies, and anything skipped.
+Report the way `communication` says, with an outcome such as "5 open items on #42: 3 to fix, 1 to push back, 1 for you", and asks such as approving the plan, pushing, posting the replies and re-requesting review. Then the plan, or once acted on, a line per commit, the drafted replies, and anything skipped.

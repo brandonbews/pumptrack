@@ -22,6 +22,7 @@ Change nothing yet.
   - **Glossary:** whether the project keeps one, and where.
   - **The app:** whether users run something, such as a site, a CLI or an API, and whether agents have a way to start it, drive it the way a user does and keep proof.
 - **The user and the machine:** these differ by person and machine, not by project, so they belong in the user's own setup. Check their own settings, not your environment, which whoever started you may have set.
+  - **Talking to them:** pumptrack's skills talk to the user the way `communication` says, but a skill loads only when something points to it. Offer to add one line to their own agent instructions, such as "Talk to me the way the `communication` skill says", so every session does.
   - **Seeing things:** how they like to see Markdown, code, diffs and reports, as `show-user` asks.
   - **Opening sessions:** how they'd like `sidebar` to open a new session with its brief already sent: the tool and the exact commands that open a tab, start the agent and send the brief, or just a one-line command to run. Don't pick a tool for them, even when only one is installed. The answer goes in their own agent instructions, where `sidebar` looks.
   - **How deep agents go:** the deepest chain is four agents below the session: `address-pr-feedback`, `build`, `review` and `find-bugs`, under `pumptrack`. Some tools cap it lower, as Claude Code's `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` does at three by default. Below four the skills still work, but the last step loses its fresh context.
@@ -29,7 +30,7 @@ Change nothing yet.
 
 ## Ask, in one round
 
-Ask everything in one round, through an interactive prompt if you have one. Give each question your recommended answer, worded so "yes" accepts it, and skip what's already settled.
+Ask everything in one round, the way `communication` says, and skip what's already settled.
 
 - **Install,** if needed: in the project, committed for everyone or kept out of git for this clone only (through the file `git rev-parse --git-path info/exclude` names), or just for the user, in their personal skills folder for every project on this machine. And what to do about each clash.
 - **What you couldn't find** about the project.
@@ -37,7 +38,7 @@ Ask everything in one round, through an interactive prompt if you have one. Give
 - **The user's setup:** anything above that isn't set yet.
 - **What's missing:** offer to have each missing or failing check set up or fixed with `build`, and `create-verify-skill` for an app agents can't drive.
 
-If you can't talk to the user, as when another agent sent you, stop here and report your questions and the draft notes. You'll be sent back with their answers.
+If you can't ask the user, stop here and report your questions and the draft notes. You'll be sent back with their answers.
 
 ## Do it
 
@@ -50,4 +51,4 @@ Show the user a draft of the notes first.
 
 ## Report
 
-Start with the outcome in one line, such as "Set up: notes in `docs/agents/workflow.md`, lint failing". Then a "Needs you" list of every question and action for the user, or "Nothing", including what this machine lacks to run every check. Then what you recorded and where, what you changed in the user's setup, and what you left unset.
+Report the way `communication` says, with an outcome such as "Set up: notes in `docs/agents/workflow.md`, lint failing", and among the asks what this machine lacks to run every check. Then what you recorded and where, what you changed in the user's setup, and what you left unset.
