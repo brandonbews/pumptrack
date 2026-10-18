@@ -46,7 +46,7 @@ Show the user a draft of the notes first.
 1. **Install** the skills: copy each folder under `skills/` in pumptrack's repo, https://github.com/brandonbews/pumptrack, into the folder the user chose. Or link them, to pick up every change, from a clone that stays where it is; they follow whichever branch it has checked out. The folder differs by tool, so ask if you're not sure which it is.
 2. **Write the notes:** what you found and what the user answered, under plain headings such as Checks, Work, Docs, Landing, Glossary and The app. Point to what the project's instructions and docs already say rather than repeating it, and keep pumptrack's name out: the notes describe the project.
 3. **Add a pointer** in the project's agent instructions: one line saying what the notes cover and where they are, such as "How to check, track and land work here: `docs/agents/workflow.md`". If the notes stay out of git, the pointer goes somewhere out of git too, such as a local instructions file your tool loads. Ask before creating an instructions file.
-4. **Land** what's committed the way the project lands work, with commits that name no agent, as `build` says. Change the user's setup as they agreed, and follow up the offers they took.
+4. **Land** what's committed the way the project lands work. Change the user's setup as they agreed, and follow up the offers they took.
 
 ## Report
 

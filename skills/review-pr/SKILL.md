@@ -31,8 +31,8 @@ Check out the PR's head in a temporary worktree, so the user's own checkout is u
 ## Post
 
 1. Go through the findings with the user, and keep the ones they pick, worded as they want.
-2. Post them as a pending review on the commit you reviewed: one comment per finding on its line, and no `event`, which leaves the review pending and visible only to the user. GitHub only takes comments on lines in the diff, so findings elsewhere go in the summary. End every comment with `<sub>Written by an AI agent, reviewed by me.</sub>`.
-3. Write the summary, ending with the same line, and show it to the user. Keep it in a temp file, named in your report, rather than on GitHub until submitting: GitHub's own dialog opens with an empty box and replaces a summary set through the API with it.
+2. Post them as a pending review on the commit you reviewed: one comment per finding on its line, and no `event`, which leaves the review pending and visible only to the user. GitHub only takes comments on lines in the diff, so findings elsewhere go in the summary.
+3. Write the summary and show it to the user. Keep it in a temp file, named in your report, rather than on GitHub until submitting: GitHub's own dialog opens with an empty box and replaces a summary set through the API with it.
 4. Submit only when the user says to, with the event they choose (approve, request changes or comment; only comment on the user's own PR) and the summary: through the pending review's submit endpoint, or as a new review if nothing is pending.
 
 If you can't talk to the user, as when another agent sent you, stop before posting and report. You'll be sent back with the user's picks.

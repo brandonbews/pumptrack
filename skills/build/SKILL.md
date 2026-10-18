@@ -31,7 +31,7 @@ Land it the way the brief says, else the project's instructions, and ask if neit
 
 Fixing feedback on a PR, commit on its branch without pushing: pushing waits for the user's word. Where the project says to ask before pushing, ask, or stop and put it under "Needs you".
 
-Commits follow the repo's style and name no agent: no co-author trailer or other line crediting it, even if your tool adds one by default.
+Commits follow the repo's style.
 
 ## Report
 

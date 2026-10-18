@@ -23,7 +23,6 @@ Design decisions go in `internal/DESIGN.md` and credits in `internal/CREDITS.md`
 - Work goes on a branch, and lands as a PR to `main`.
 - Commit and push only when Brandon says so for that piece of work. He merges.
 - A merge sets nothing off.
-- Commits name no agent.
 
 ## The app
 

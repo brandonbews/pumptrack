@@ -17,5 +17,4 @@ Open-source agent skills for orchestrating coding agents. An agent installs them
 - **Skills stay portable.** Frontmatter keeps to the [Agent Skills spec](https://agentskills.io/specification), with `name` matching the folder name; a Claude Code-only field needs a reason recorded in the design notes. Bodies say what to do in plain terms instead of naming Claude Code's tools. Claude-specific wiring, such as hooks, stays out of the skill folders.
 - **Credit what we draw on** in `internal/CREDITS.md`: one line per person or project, saying what we took or learned from it.
 - **A README diagram change gets rendered and looked at before it lands**, with a Mermaid renderer, so what's checked is the picture rather than the source.
-- **Commits name no agent.** No `Co-Authored-By` trailer or other line crediting the agent, the same as pumptrack's skills do in other projects.
 - **Record design decisions in `internal/DESIGN.md`**, committed in that repo, as they're made: the decision, the date and the reason, in plain prose. Don't quote Brandon. Revise a decision in place with a note rather than adding a contradicting one.

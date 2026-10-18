@@ -9,7 +9,7 @@ description: Run this session as an orchestrator that talks and plans with the u
 
 ## Hand off the work
 
-Hand the work to subagents: building, exploring, and anything that pulls a lot into your context, like searches, the tracker, tickets, logs or test output. Any fix or change to the project's files, even one line, goes to a subagent, sent with `build`. The one exception is a line in the tracker or the project's notes, which is yours to write. Small things that serve the goal, like a quick read or a commit, you can do yourself. Commits, yours and your agents', name no agent: no co-author trailer or other line crediting it.
+Hand the work to subagents: building, exploring, and anything that pulls a lot into your context, like searches, the tracker, tickets, logs or test output. Any fix or change to the project's files, even one line, goes to a subagent, sent with `build`. The one exception is a line in the tracker or the project's notes, which is yours to write. Small things that serve the goal, like a quick read or a commit, you can do yourself.
 
 Run agents in the background, so you're free to keep talking. Builds that commit straight onto a branch, such as main or a PR's, share its checkout, so send those one at a time.
 

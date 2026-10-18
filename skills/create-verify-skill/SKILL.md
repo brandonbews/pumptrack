@@ -52,7 +52,7 @@ Follow the new skill end to end: start, health check, drive one feature from the
 
 ## Hand it over
 
-If it's in the project, land it the way the project lands work, with commits that name no agent, as `build` says. Add it to the project's notes for agents, the ones its instructions point to, so whoever builds a change knows to use it.
+If it's in the project, land it the way the project lands work. Add it to the project's notes for agents, the ones its instructions point to, so whoever builds a change knows to use it.
 
 ## Report
 
