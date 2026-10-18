@@ -15,8 +15,6 @@ description: Review a GitHub pull request, post the findings the user keeps as a
 
 ## Gather
 
-Use `gh` and GitHub's API.
-
 1. **The PR:** its description, the ticket it links if any, its base and its head commit.
 2. **What's been said:** reviews, inline threads with their replies and whether each is resolved (GitHub's GraphQL API has the thread state), and conversation comments.
 3. **The user's earlier reviews:** submitted reviews by the user's login. If the user already has a pending review on the PR, post nothing new, since GitHub allows one per person. Submit it if that's what the user asked for, and otherwise say so under "Needs you" and stop.
