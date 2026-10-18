@@ -30,7 +30,7 @@ When a term is settled and the project keeps a glossary, write it there right aw
 
 ## Finish
 
-You're done when no decision is left open and the user confirms you understand each other. Then write the plan where the project keeps docs and its tickets where it tracks work, and ask if its instructions say neither. The plan holds the goal, each decision with its reason, and what's out of scope. Each ticket is a step small enough to build and check on its own. Don't build any of it.
+You're done when no decision is left open and the user confirms you understand each other. Then write the plan where the project keeps docs and its tickets where it tracks work, and ask if its instructions say neither. The plan holds the goal, each decision with its reason, and what's out of scope. Each ticket is a step small enough to build and check on its own. It's the full record of that step, detailed enough for a fresh agent to pick up with nothing else: what and why, where in the code, what it waits on, and how to tell it's done. A page showing the plan to the user is a view of the plan and tickets, not the record, so nothing lives only there. Don't build any of it.
 
 ## Report
 
