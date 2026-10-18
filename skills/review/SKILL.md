@@ -10,9 +10,8 @@ description: Review a code change against its goal and the project's principles,
 ## What you need
 
 - **The goal:** a ticket, plan, PRD or PR description. If you weren't given one, look in the PR, the commits or the tracker. If there's none, say so under "Needs you" and review against the principles alone.
-- **The change:** a diff, branch, PR or commits. If you weren't told, review the current branch against the branch it was cut from, and say so. If it's unclear what to review, ask.
+- **The change:** a diff, branch, PR or commits. If you weren't told, review the current branch against the branch it was cut from, and say so.
 - **Earlier comments,** on a re-review.
-- **The project's conventions:** its agent instructions, contributing guide, and lint and format configs.
 
 ## Review it
 
@@ -20,7 +19,7 @@ description: Review a code change against its goal and the project's principles,
 2. **The goal.** Check that everything it asks for is done, and nothing beyond it was added.
 3. **The principles.** Check the change against `principles`. Read the tests that cover the changed code, not only the changed tests, and flag changed behavior that no test would catch breaking.
 4. **Earlier comments.** Say whether each was resolved, not resolved, or answered, and whether the answer holds.
-5. **Keep what matters.** Keep a finding only if it's a bug, a gap against the goal, or a broken principle that will cost a reader or caller. Drop matters of taste. Where the right call turns on intended behavior or a preference you can't find in the code or docs, ask under "Needs you" rather than guess.
+5. **Keep what matters.** Keep a finding only if it's a bug, a gap against the goal, or a broken principle that will cost a reader or caller. Drop matters of taste.
 
 Change nothing and post nothing while reviewing. If asked afterward to fix findings, hand each approved one to `build`.
 
