@@ -27,7 +27,7 @@ Name it `verify-<app>`, and put it where pumptrack's skills were installed for t
 
 - **Start:** the command that brings the app up from empty, with any migrations and seed data, how to tell it's ready to use rather than just running, and how to stop it.
 - **Health check:** one read-only check that this copy is worth driving: it's up, it's running this checkout's code, and this run started it. Run it first, and again whenever something looks off. If two copies can't run side by side, say so, and never drive one this run didn't start.
-- **Drive:** how to work it, with real selectors and commands. Prefer stable handles, such as labels, routes and prompts, over positions.
+- **Drive:** how to work it, with real selectors and commands.
 - **Proof:** what to keep and where, in a folder out of git. Go through the user's real path, not test-only shortcuts. Keep the action and its result, not just the final screen, and check side effects, such as stored data, as well as what's shown.
 - **Clean up:** stop only what this run started, never by process name, and keep the proof.
 - **The map:** read `features.md` before driving, and fix it whenever a drive finds it wrong.
@@ -36,7 +36,7 @@ Any script it ships is executable, and the skill shows how to run it.
 
 ## Map the features
 
-Write `features.md` beside it, covering the three to five main features a user reaches, found from routes, commands, menus or docs. For each:
+Write `features.md` beside it, covering the three to five main features a user reaches. For each:
 
 - What it is, as a user sees it.
 - Every way a user gets to it.
