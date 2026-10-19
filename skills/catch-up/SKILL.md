@@ -33,4 +33,4 @@ Start with one line saying how many things need the user, or that nothing does. 
 
 Write each row in plain words that stay true when read alone. Keep the columns as they are, since tables from several projects may be combined. Nothing goes after the table.
 
-Show it with `show-user`, so it reaches the user the way they like reports. When another session asked for it, send it the table, with whatever else it asked for, such as the project folder.
+Show it with `show-to-user`, so it reaches the user the way they like reports. When another session asked for it, send it the table, with whatever else it asked for, such as the project folder.

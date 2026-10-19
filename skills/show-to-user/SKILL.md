@@ -1,5 +1,5 @@
 ---
-name: show-user
+name: show-to-user
 description: Show the user something to look at, such as a file, a diff or a report, the way they like to see that kind of thing, instead of handing them a path. Use whenever you want the user to read or look at something, such as a plan, a skill, code, a branch's changes or a report.
 ---
 

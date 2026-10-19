@@ -21,7 +21,7 @@ flowchart LR
   sidebar -->|"such as"| grill["grill"]
   pt -->|"before a compact,<br/>picked up after"| handoff["handoff"]
   pt -->|"when you're back"| catchup["catch-up"]
-  catchup -->|"shows you<br/>the table"| show["show-user"]
+  catchup -->|"shows you<br/>the table"| show["show-to-user"]
 ```
 
 A change goes to a builder, which gathers the requirements, builds in small steps that each end in a check, gets a fresh review before landing, and lands it the way the project lands work. Reviewing someone's PR is the same review, with a thin skill for the GitHub side: it posts the findings you pick in your name, and on a re-review it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and has each accepted fix built. Builders follow the principles, and reviewers use them to keep only the findings that matter.
@@ -73,7 +73,7 @@ flowchart TD
 | `grill` | Interviews you about a plan in rounds, each question with a recommended answer, until nothing is open, then writes the plan and its tickets | You, usually in a sidebar |
 | `handoff` | Writes a session's live state to a file before a compact or a clear, and picks it up when the session starts again | `pumptrack` |
 | `catch-up` | One table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong | You, and the lookout |
-| `show-user` | Shows you a file, a diff or a report the way you like to see it, asking the first time | Any skill with something for you to read |
+| `show-to-user` | Shows you a file, a diff or a report the way you like to see it, asking the first time | Any skill with something for you to read |
 | `pumptrack-lookout` | From the folder above your projects, asks each running session for a catch-up, combines them on one page, and passes work you direct to the right session | You |
 
 ## Install
