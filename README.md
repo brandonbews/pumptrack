@@ -87,3 +87,10 @@ The lookout goes in the skills folder of the folder that holds your projects, no
 ## License
 
 [MIT](LICENSE).
+
+## Credits
+
+- [pstack](https://github.com/cursor/plugins/tree/main/pstack), by [poteto](https://x.com/poteto): principles as short, named rules agents apply, and the ones `principles` adapts; defaults in the skills with sparse per-project overrides; `create-verification-skill`, the model for `create-verify-skill`, and `setup-pstack`, for ending setup by offering it; `blast-radius`'s scale of how sure a claim is, and its habit of looking where a search stops, for `find-bugs`; `no-comments`, for treating a comment as a sign the code needs rewriting; `tdd`, for `build` writing a failing test first for a bug; and `ketchup`, for `catch-up` starting from the user's last message.
+- [skills](https://github.com/mattpocock/skills), by [Matt Pocock](https://github.com/mattpocock): `grill-me` and `grilling`, the base of `grill`, and `grill-with-docs` with `domain-modeling`, for its vocabulary moves and glossary; `setup-matt-pocock-skills`, the model for `setup-pumptrack`, and its prose tracker file other skills defer to; and `implement`, for `build` fetching a ticket given by reference.
+- [A Philosophy of Software Design](https://web.stanford.edu/~ouster/cgi-bin/book.php), by John Ousterhout: deep modules, small interfaces that hide real work, in the "easy to follow" principle.
+- Studied for how a project's own settings work: [gstack](https://github.com/garrytan/gstack) by Garry Tan, [superpowers](https://github.com/obra/superpowers) by Jesse Vincent, [spec-kit](https://github.com/github/spec-kit) by GitHub, [BMAD](https://github.com/bmad-code-org/BMAD-METHOD) by BMad Code, [Agent OS](https://github.com/buildermethods/agent-os) by Builder Methods, and [OpenSpec](https://github.com/Fission-AI/OpenSpec) by Fission AI.
