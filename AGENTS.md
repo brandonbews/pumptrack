@@ -7,7 +7,9 @@ Open-source agent skills for orchestrating coding agents. An agent installs them
 - `skills/<name>/SKILL.md`: one folder per skill. Only `skills/` gets copied into projects, so repo files (README, this file) stay outside it.
 - `pumptrack-lookout/SKILL.md`: the lookout, kept beside `skills/` because it goes in the folder above the user's projects, not into each one.
 - `evals/`: scripted checks of how the skills behave, run through Claude Code's headless mode.
-- `internal/`: a gitignored clone of the private `pumptrack-internal` repo, which holds the design notes (`DESIGN.md`) and credits (`CREDITS.md`). It may be missing, and that's fine; the skills work the same without it. To set it up on a computer, follow the README's "Private notes".
+- `internal/`: a gitignored clone of the private `pumptrack-internal` repo, which holds the design notes (`DESIGN.md`) and credits (`CREDITS.md`). It may be missing, and that's fine; the skills work the same without it. To set it up on a computer, from this checkout:
+  1. `git clone https://github.com/brandonbews/pumptrack-internal.git internal`
+  2. `sh internal/scripts/install-hooks.sh`, which installs a `post-checkout` hook that links `internal` into every new worktree. It's safe to rerun, and it refuses to replace a hook it didn't write.
 
 ## Rules
 

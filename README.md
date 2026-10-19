@@ -2,7 +2,7 @@
 
 Agent skills for orchestrating coding agents, so the work keeps moving with as little effort from you as possible.
 
-A pump track is a loop of rollers and banked turns that you ride without pedaling: you keep your speed by pushing into the terrain at the right moments. pumptrack brings the same idea to agent work. The loop carries itself, and your effort goes into a few well-timed inputs.
+A pump track is a loop of rollers and berms that riders keep moving around without pedaling: they keep their speed by pushing into the terrain at the right moments. pumptrack brings the same idea to agent work. The loop carries itself, and your effort goes into a few well-timed inputs.
 
 ## How it works
 
@@ -83,13 +83,6 @@ Clone this repo: `git clone https://github.com/brandonbews/pumptrack.git`. Keep 
 In a project, ask an agent to read `skills/setup-pumptrack/SKILL.md` from the clone and follow it; for Claude Code, that's `claude "Read <clone>/skills/setup-pumptrack/SKILL.md and follow it"`. It asks whether the skills go in the project, committed or kept out of git, or just for you, installs them, and sets the project up, keeping what it finds in notes the project's instructions point to. It's safe to run again. Then start a session with `/pumptrack`.
 
 The lookout goes in the skills folder of the folder that holds your projects, not in any one of them, which is why it sits beside `skills/` as `pumptrack-lookout/`. Setting up offers to put it there. For Claude Code, with your projects in `~/projects`, from the clone: `mkdir -p ~/projects/.claude/skills && ln -s "$PWD/pumptrack-lookout" ~/projects/.claude/skills/pumptrack-lookout`. Then start a session in that folder with `/pumptrack-lookout`.
-
-## Private notes
-
-The maintainer keeps the design notes in a private repo, `brandonbews/pumptrack-internal`, cloned into this checkout as `internal/`. This repo ignores `/internal`, and the skills work the same without it. To set up a computer with it:
-
-1. Clone this repo, then the private one inside it: `git clone https://github.com/brandonbews/pumptrack-internal.git internal`.
-2. Run `sh internal/scripts/install-hooks.sh`. It installs a `post-checkout` hook that links `internal` into every new worktree. It's safe to rerun, and it refuses to replace a hook it didn't write.
 
 ## License
 
