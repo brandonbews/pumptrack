@@ -2,7 +2,7 @@
 
 Agent skills for orchestrating coding agents, so the work keeps moving with as little effort from you as possible.
 
-A pump track is a loop of rollers and banked turns that you ride without pedaling: you keep your speed by pushing into the terrain at the right moments. pumptrack brings the same idea to agent work. The loop carries itself, and your effort goes into a few well-timed inputs.
+A pump track is a loop of rollers and berms that riders keep moving around without pedaling: they keep their speed by pushing into the terrain at the right moments. pumptrack brings the same idea to agent work. The loop carries itself, and your effort goes into a few well-timed inputs.
 
 ## How it works
 
@@ -21,7 +21,7 @@ flowchart LR
   sidebar -->|"such as"| grill["grill"]
   pt -->|"before a compact,<br/>picked up after"| handoff["handoff"]
   pt -->|"when you're back"| catchup["catch-up"]
-  catchup -->|"shows you<br/>the table"| show["show-user"]
+  catchup -->|"shows you<br/>the table"| show["show-to-user"]
 ```
 
 A change goes to a builder, which gathers the requirements, builds in small steps that each end in a check, gets a fresh review before landing, and lands it the way the project lands work. Reviewing someone's PR is the same review, with a thin skill for the GitHub side: it posts the findings you pick in your name, and on a re-review it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and has each accepted fix built. Builders follow the principles, and reviewers use them to keep only the findings that matter.
@@ -73,7 +73,7 @@ flowchart TD
 | `grill` | Interviews you about a plan in rounds, each question with a recommended answer, until nothing is open, then writes the plan and its tickets | You, usually in a sidebar |
 | `handoff` | Writes a session's live state to a file before a compact or a clear, and picks it up when the session starts again | `pumptrack` |
 | `catch-up` | One table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong | You, and the lookout |
-| `show-user` | Shows you a file, a diff or a report the way you like to see it, asking the first time | Any skill with something for you to read |
+| `show-to-user` | Shows you a file, a diff or a report the way you like to see it, asking the first time | Any skill with something for you to read |
 | `pumptrack-lookout` | From the folder above your projects, asks each running session for a catch-up, combines them on one page, and passes work you direct to the right session | You |
 
 ## Install
@@ -83,13 +83,6 @@ Clone this repo: `git clone https://github.com/brandonbews/pumptrack.git`. Keep 
 In a project, ask an agent to read `skills/setup-pumptrack/SKILL.md` from the clone and follow it; for Claude Code, that's `claude "Read <clone>/skills/setup-pumptrack/SKILL.md and follow it"`. It asks whether the skills go in the project, committed or kept out of git, or just for you, installs them, and sets the project up, keeping what it finds in notes the project's instructions point to. It's safe to run again. Then start a session with `/pumptrack`.
 
 The lookout goes in the skills folder of the folder that holds your projects, not in any one of them, which is why it sits beside `skills/` as `pumptrack-lookout/`. Setting up offers to put it there. For Claude Code, with your projects in `~/projects`, from the clone: `mkdir -p ~/projects/.claude/skills && ln -s "$PWD/pumptrack-lookout" ~/projects/.claude/skills/pumptrack-lookout`. Then start a session in that folder with `/pumptrack-lookout`.
-
-## Private notes
-
-The maintainer keeps the design notes in a private repo, `brandonbews/pumptrack-internal`, cloned into this checkout as `internal/`. This repo ignores `/internal`, and the skills work the same without it. To set up a computer with it:
-
-1. Clone this repo, then the private one inside it: `git clone https://github.com/brandonbews/pumptrack-internal.git internal`.
-2. Run `sh internal/scripts/install-hooks.sh`. It installs a `post-checkout` hook that links `internal` into every new worktree. It's safe to rerun, and it refuses to replace a hook it didn't write.
 
 ## License
 
