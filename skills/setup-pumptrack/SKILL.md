@@ -13,7 +13,7 @@ It's safe to run again: check what's already set, and ask only about what's miss
 
 Change nothing yet.
 
-- **Install:** whether pumptrack's skills are installed for this project, in its skills folder or the user's personal one. Note any skill already installed with the same name or doing the same job, such as another code review skill, since the two compete for the same requests, and which one the tool lets win.
+- **Install:** whether pumptrack's skills are installed for this project, in its skills folder or the user's personal one. If they're linked, any skill in the clone that isn't linked yet, or link whose skill is gone, counts as missing. Note any skill already installed with the same name or doing the same job, such as another code review skill, since the two compete for the same requests, and which one the tool lets win.
 - **The project:** read its agent instructions, README, contributing guide, build and package files, CI config, connected tools, git remote and remote branches. Look for:
   - **Checks:** the commands for tests, lint, formatting and type checks. Run each one this machine can, in its check-only form where it has one, skipping any that touches something shared, such as a deployment, and revert anything a check changes, counting it as failed. Note any that fail, and what the machine lacks for the rest, such as secrets, a service or another machine, without working around it.
   - **Work:** where it's tracked, such as an issue tracker, Jira or a file.
@@ -48,7 +48,7 @@ If you can't ask the user, stop here and report your questions and the draft not
 
 Show the user a draft of the notes first.
 
-1. **Install** the skills: copy each folder under `skills/` in pumptrack's repo, https://github.com/brandonbews/pumptrack, into the folder the user chose. Or link them, to pick up every change, from a clone that stays where it is; they follow whichever branch it has checked out. The folder differs by tool, so ask if you're not sure which it is.
+1. **Install** the skills: copy each folder under `skills/` in pumptrack's repo, https://github.com/brandonbews/pumptrack, into the folder the user chose. Or link them, to pick up every change, from a clone that stays where it is; they follow whichever branch it has checked out. Links go one per skill, so on a rerun, link any skill that's new and remove links whose skill is gone. The folder differs by tool, so ask if you're not sure which it is.
 2. **Write the notes:** what you found and what the user answered, under plain headings such as Checks, Work, Docs, Landing, Glossary and The app. Point to what the project's instructions and docs already say rather than repeating it, and keep pumptrack's name out: the notes describe the project.
 3. **Add a pointer** in the project's agent instructions: one line saying what the notes cover and where they are, such as "How to check, track and land work here: `docs/agents/workflow.md`". If the notes stay out of git, the pointer goes somewhere out of git too, such as a local instructions file your tool loads. Ask before creating an instructions file.
 4. **Land** what's committed the way the project lands work. Change the user's setup as they agreed, and follow up the offers they took.
