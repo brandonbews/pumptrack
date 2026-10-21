@@ -1,6 +1,6 @@
 ---
 name: review
-description: Review a code change against its goal and the project's principles, and report only the findings that matter. Use for a builder's change before it lands, someone's PR, or a re-review, or whenever asked to review code, a branch or a PR.
+description: Review a code change against its goal and the project's principles, and report only the findings that matter. Use for a builder's change before it lands, a PR that `review-pr` hands you, or whenever asked to review a diff, a branch or commits.
 ---
 
 # Review

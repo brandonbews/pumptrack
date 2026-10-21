@@ -29,7 +29,7 @@ Land it the way the brief says, else the project's instructions, and ask if neit
 - A branch and a PR into the branch you were given, or the default one, ready for review with CI passing. Wait for CI and fix what fails.
 - The same, then merged once CI passes and it's proven to work end to end. Merge only where the brief or the project says to.
 
-Fixing feedback on a PR, commit on its branch without pushing: pushing waits for the user's word. Where the project says to ask before pushing, ask, or if you can't, stop and report it.
+When fixing feedback on a PR, commit on its branch and don't push: pushing waits for the user's word. Where the project says to ask before pushing, ask, or if you can't, stop and report it.
 
 Commits follow the repo's style.
 
