@@ -30,7 +30,7 @@ These differ by person and machine, not by project, so they belong in the user's
 - **Seeing things:** how they like to see Markdown, code, diffs and reports, as `show-to-user` asks.
 - **Opening sessions:** how they'd like `sidebar` to open a new session with its brief already sent: the tool and the exact commands that open a tab, start the agent and send the brief, or just a one-line command to run. Don't pick a tool for them, even when only one is installed. The answer goes in their own agent instructions, where `sidebar` looks.
 - **How deep agents go:** the deepest chain is four agents below the session: `address-pr-feedback`, `build`, `review` and `find-bugs`, under `pumptrack`. Some tools cap it lower, as Claude Code's `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` does at three by default. Below four the skills still work, but the last step loses its fresh context. Offer to raise the cap where their tool allows it.
-- **The lookout:** `pumptrack-lookout`, in pumptrack's repo, catches the user up across all their projects and lets them direct work in any of them. It goes in the skills folder of the folder that holds their projects, not in any one project. Offer to link it there.
+- **The lookout:** `pumptrack-lookout`, in pumptrack's repo, catches the user up across all their projects and lets them direct work in any of them. It goes in the skills folder of the folder that holds their projects, not in any one project. Offer to copy or link it there.
 
 ## Ask, in one round
 
