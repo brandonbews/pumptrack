@@ -1,15 +1,13 @@
 # pumptrack
 
-Open-source agent skills for orchestrating coding agents. An agent installs them by cloning this repo and copying `skills/` into a project. A personal project, to be published on GitHub for anyone to use. The repo stays private until then, but everything in it is written as public.
+Open-source agent skills for orchestrating coding agents. An agent installs them by cloning this repo and copying `skills/` into a project. A personal project, published on GitHub for anyone to use.
 
 ## Layout
 
 - `skills/<name>/SKILL.md`: one folder per skill. Only `skills/` gets copied into projects, so repo files (README, this file) stay outside it.
 - `pumptrack-lookout/SKILL.md`: the lookout, kept beside `skills/` because it goes in the folder above the user's projects, not into each one.
 - `evals/`: scripted checks of how the skills behave, run through Claude Code's headless mode.
-- `internal/`: a gitignored clone of the private `pumptrack-internal` repo, which holds the roadmap (`ROADMAP.md`). It may be missing, and that's fine; the skills work the same without it. To set it up on a computer, from this checkout:
-  1. `git clone https://github.com/brandonbews/pumptrack-internal.git internal`
-  2. `sh internal/scripts/install-hooks.sh`, which installs a `post-checkout` hook that links `internal` into every new worktree. It's safe to rerun, and it refuses to replace a hook it didn't write.
+- `internal/`: the maintainer's private roadmap, a gitignored clone of the `pumptrack-internal` repo, whose README says how to set it up. Contributors can ignore it; the skills work the same without it.
 
 ## Rules
 
@@ -30,7 +28,7 @@ There are no other tests, no linter, no CI and no app to run; the evals do the c
 
 ## Work and landing
 
-- There's no tracker beyond `internal/ROADMAP.md`.
+- Work is tracked in the private `internal/ROADMAP.md`. Without it, ideas and bugs go to a GitHub issue. Issues and PRs are welcome.
 - Work goes on a branch, and lands as a PR to `main`.
-- Commit and push only when the maintainer says so for that piece of work. The maintainer merges.
+- Commit and push only when the user says so for that piece of work. The maintainer merges.
 - A merge sets nothing off.
