@@ -86,6 +86,10 @@ In a project, ask an agent to read `skills/setup-pumptrack/SKILL.md` from the cl
 
 The lookout goes in the skills folder of the folder that holds your projects, not in any one of them, which is why it sits beside `skills/` as `pumptrack-lookout/`. Setting up offers to put it there. For Claude Code, with your projects in `~/projects`, from the clone: `mkdir -p ~/projects/.claude/skills && ln -s "$PWD/pumptrack-lookout" ~/projects/.claude/skills/pumptrack-lookout`. Then start a session in that folder with `/pumptrack-lookout`.
 
+## Contributing
+
+Issues and PRs are welcome. [`AGENTS.md`](AGENTS.md) has the project's rules, for you or your agent.
+
 ## License
 
 [MIT](LICENSE).
