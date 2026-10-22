@@ -1,6 +1,6 @@
 # pumptrack
 
-Agent skills for orchestrating coding agents, so the work keeps moving with as little effort from you as possible.
+Agent skills that keep your coding agents moving in rhythm and on track, no pedaling required.
 
 A pump track is a loop of rollers and berms that riders keep moving around without pedaling: they keep their speed by pushing into the terrain at the right moments. pumptrack brings the same idea to agent work. The loop carries itself, and your effort goes into a few well-timed inputs.
 

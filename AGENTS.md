@@ -28,7 +28,7 @@ There are no other tests, no linter, no CI and no app to run; the evals do the c
 
 ## Work and landing
 
-- There's no tracker beyond `internal/ROADMAP.md`.
+- Work is tracked in the private `internal/ROADMAP.md`. Without it, ideas and bugs go to a GitHub issue. Issues and PRs are welcome.
 - Work goes on a branch, and lands as a PR to `main`.
-- Commit and push only when the maintainer says so for that piece of work. The maintainer merges.
+- Commit and push only when the user says so for that piece of work. The maintainer merges.
 - A merge sets nothing off.
