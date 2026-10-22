@@ -1,6 +1,6 @@
 ---
 name: pumptrack-lookout
-description: Catch the user up across all their projects at once, by asking every running session for a catch-up and combining the answers into one report. Use from the folder that holds the user's projects, when they ask to catch up on everything or where things stand across projects, and as their place to direct work across them.
+description: Catch the user up across all their projects at once, by asking every session running on this machine for a catch-up and combining the answers into one report. Use from the folder that holds the user's projects, when they ask to catch up on everything or where things stand across projects, and as their place to direct work across them.
 ---
 
 # Lookout
@@ -11,9 +11,9 @@ description: Catch the user up across all their projects at once, by asking ever
 
 Message every other session running on this machine, asking it for a catch-up with `catch-up`. Give your session's name to reply to, and ask for its project folder and the table, nothing else. If the user gave a time to start from, pass it on.
 
-Ask them all, without sorting them first, since `catch-up` scopes itself to its session.
+Skip any session listed as offline or on another machine, and leave it out of the report. Ask the others, without sorting them further, since `catch-up` scopes itself to its session.
 
-The user may have walked away, so don't stop the catch-up to ask them anything. A session waiting on the user's input, such as a question or an approval, can't answer until they give it, so don't wait for it: give it a Needs you row at the top of the report saying so, with what it's waiting on if you can tell. Give the rest a few minutes, then report with what's come in, a row for each session that hasn't answered, and pass later answers on as they arrive. If you can't message other sessions, say so, and suggest running `catch-up` in each.
+The user may have walked away, so don't stop the catch-up to ask them anything. A session waiting on the user's input, such as a question or an approval, can't answer until they give it, so don't wait for it: give it a Needs you row at the top of the report saying so, with what it's waiting on if you can tell. Give the rest a few minutes, then report with what's come in, a row for each session you asked that hasn't answered, and pass later answers on as they arrive. If you can't message other sessions, say so, and suggest running `catch-up` in each.
 
 ## Combine
 
@@ -30,4 +30,4 @@ Where you can publish a page, publish the report as one titled "Lookout", and gi
 
 ## Direct the work
 
-The user may direct work in any project from here. Stay light, as `pumptrack` does: message the session that owns the project with what the user asked and your session's name to reply to, then pass its reply on. Never do a project's work yourself. Where a project has no session, offer to open a `pumptrack` session there, the way `sidebar` opens one, named for the project and with the request as its brief.
+The user may direct work in any project from here. Stay light, as `pumptrack` does: message the session on this machine that owns the project with what the user asked and your session's name to reply to, then pass its reply on. Never do a project's work yourself. Where a project has no session, offer to open a `pumptrack` session there, the way `sidebar` opens one, named for the project and with the request as its brief.

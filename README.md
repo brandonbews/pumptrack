@@ -43,7 +43,7 @@ flowchart LR
   review -->|"follows"| principles
 ```
 
-From the folder above all your projects, the lookout asks each running session to catch it up and combines the answers on one page you can pin. You can direct work in any project from there too, and it passes that to the project's session.
+From the folder above all your projects, the lookout asks each session running on the same machine to catch it up and combines the answers on one page you can pin. You can direct work in any project from there too, and it passes that to the project's session.
 
 Across projects:
 
@@ -74,7 +74,7 @@ flowchart TD
 | `handoff` | Writes a session's live state to a file before a compact or a clear, and picks it up when the session starts again | `pumptrack` |
 | `catch-up` | One table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong | You, and the lookout |
 | `show-to-user` | Shows you a file, a diff or a report the way you like to see it, asking the first time | Any skill with something for you to read |
-| `pumptrack-lookout` | From the folder above your projects, asks each running session for a catch-up, combines them on one page, and passes work you direct to the right session | You |
+| `pumptrack-lookout` | From the folder above your projects, asks each session running on the same machine for a catch-up, combines them on one page, and passes work you direct to the right session | You |
 
 ## Install
 
