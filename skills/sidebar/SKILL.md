@@ -9,7 +9,7 @@ description: Spin a deep topic off into a fresh session the user works in direct
 
 ## Write the brief
 
-The new session starts knowing nothing, so the brief stands alone. Write it to a file in a temp folder, covering:
+Write the brief to a file in a temp folder, covering:
 
 - **Where it is:** the project's path, that the user works there directly, and how to reach this session, which is waiting to hear back, such as its name or its link in your tool.
 - **The goal,** and the skill that fits it, such as `grill`.
@@ -32,4 +32,4 @@ Whichever way, keep it in your "Needs you" list until the user says they've star
 
 ## While it runs
 
-Keep going on your own work. When it reports back, pass its "Needs you" on to the user, and read its outcome only when you need it.
+When it reports back, pass its "Needs you" on to the user, and read its outcome only when you need it.
