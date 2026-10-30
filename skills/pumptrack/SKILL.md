@@ -16,10 +16,10 @@ Run agents so you're free to keep talking, and hear back when each one is done. 
 Give each agent the task, the context it needs and the skill that fits, such as `build` or `review`, and ask it to:
 
 - See the work through to the end its skill sets, such as landing it.
-- Start the fresh agents its skill calls for, such as `build`'s reviewer, since some tools let an agent start others only when its brief says so.
+- Start the fresh agents its skill calls for, such as `build`'s reviewer, and to ask the same of any agent it starts, since some tools let an agent start others only when its brief says so.
 - Report back, and stop for the user's calls, the way `communication` says.
 
-If an agent hands back a PR whose checks are still running, finish the landing yourself once they're done: merge where the brief said to, or send a fix.
+If an agent hands back a PR whose checks are still running, finish the landing yourself once they're done, without blocking on them: merge where the brief said to, or send a fix.
 
 ## Keep the user in the loop
 

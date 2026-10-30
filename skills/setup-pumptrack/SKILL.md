@@ -24,7 +24,7 @@ Change nothing yet.
 
 ## The user's setup
 
-These differ by person and machine, not by project, so they belong in the user's own setup.
+This differs by person and machine, not by project, so it belongs in the user's own setup.
 
 - **Talking to them:** pumptrack's skills talk to the user the way `communication` says, but a skill loads only when something tells the agent to load it, and naming it isn't enough. Offer to add one line to their own agent instructions that does, such as "Load the `communication` skill when you start, and talk to me the way it says", so every session does. Offer it only when the skills are, or will be, installed in their personal skills folder, since those instructions load in every project.
 
