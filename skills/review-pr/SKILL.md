@@ -9,17 +9,13 @@ description: Review a GitHub pull request, post the findings the user keeps as a
 
 ## What you need
 
-- **The PR:** a number or URL. If you weren't told, use the current branch's PR, and say so.
 - **Whether to start over:** on a PR the user has reviewed before, re-review it unless they ask for a fresh full review.
 - **The user's picks,** if you were sent back with them: skip to Post, and post them as given on the commit named.
 
 ## Gather
 
-Use `gh` and GitHub's API.
-
-1. **The PR:** its description, the ticket it links if any, its base and its head commit.
-2. **What's been said:** reviews, inline threads with their replies and whether each is resolved (GitHub's GraphQL API has the thread state), and conversation comments.
-3. **The user's earlier reviews:** submitted reviews by the user's login. If the user already has a pending review on the PR, post nothing new, since GitHub allows one per person. Submit it if that's what the user asked for, and otherwise say so under "Needs you" and stop.
+1. **What's been said:** reviews, inline threads with their replies and whether each is resolved (GitHub's GraphQL API has the thread state), and conversation comments.
+2. **The user's earlier reviews:** submitted reviews by the user's login. If the user already has a pending review on the PR, post nothing new, since GitHub allows one per person. Submit it if that's what the user asked for, and otherwise say so under "Needs you" and stop.
 
 Check out the PR's head in a temporary worktree, so the user's own checkout is untouched, and remove it when you're done.
 
@@ -39,4 +35,4 @@ If you can't ask the user, stop before posting and report. You'll be sent back w
 
 ## Report
 
-Report the way `communication` says, with an outcome such as "4 findings on #42 for you to pick" or "#42 is ready to approve", and asks such as which findings to post and whether to submit. Then the commit you reviewed, `review`'s findings, and on a re-review each earlier comment and where it stands. Once anything is posted, link the PR.
+Report the way `communication` says, with an outcome such as "4 findings on #42 for you to pick" or "#42 is ready to approve", and asks such as which findings to post and whether to submit. Then the commit you reviewed, `review`'s findings, and on a re-review each earlier comment and where it stands.
