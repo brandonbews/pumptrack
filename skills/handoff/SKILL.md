@@ -14,7 +14,7 @@ description: Gather a session's live state into a handoff file, so the work carr
 ## Write one
 
 1. **Record first.** Put decisions not yet recorded, and work not yet in the tracker, where the project keeps them, so the handoff points to files rather than carrying them.
-2. **Agents still running** keep going through a compact, but may not survive a clear or a new session. Before either, wait for them to land, unless the user says not to.
+2. **Agents still running** may not survive a clear or a new session, depending on your tool. Before either, wait for them to land, unless you know they'll survive it or the user says not to.
 3. **Write the handoff,** replacing any already there:
    - What this session is, such as a `pumptrack` session, and the skill to start it with.
    - What to read first: the files that hold the state.
@@ -22,7 +22,7 @@ description: Gather a session's live state into a handoff file, so the work carr
    - Every open ask: the questions and actions waiting on the user.
    - Each agent and sidebar still out: its task, and where its work is, such as a branch or a PR.
    - Last: "Delete this file once you've picked it up."
-4. **Tell the user** it's ready, and how to pick it up: after a compact or a clear, start the session's skill again, such as `/pumptrack`. In any other session: "Read <path> and follow it".
+4. **Tell the user** it's ready, and how to pick it up: after a compact or a clear, start the session's skill again, such as `pumptrack`. In any other session: "Read <path> and follow it".
 
 ## Pick one up
 

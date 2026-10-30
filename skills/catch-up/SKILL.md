@@ -1,6 +1,6 @@
 ---
 name: catch-up
-description: Bring the user back up to speed with one table of what needs them, what's done, what's in progress, what's waiting on others and what went wrong. Use when the user asks to catch up or where things stand, such as after time away, or when another session asks for a catch-up.
+description: Bring the user back up to speed with one table of what needs them, what's done, what's in progress, what's waiting on others and what went wrong. Use when the user asks to catch up or where things stand, such as after time away.
 ---
 
 # Catch-up
@@ -18,7 +18,7 @@ Start from the user's last message before they asked, or from a time they give; 
 Keep it read-only: change nothing, start nothing, post nothing.
 
 1. **Check the record:** commits since then, branches and worktrees with any uncommitted changes, open PRs with their checks and reviews, and the tracker if there is one. In a `pumptrack` session, always send an agent to read it and bring back only the rows, so you stay light. Anywhere else, send one only if reading it would fill your context.
-2. **Add what's live yourself, since an agent can't see it:** agents and sidebars still out or that reported back, and every open ask, even one raised before the user's last message. Check each against the record rather than your memory: an agent you think is running may have landed, and a PR may have merged.
+2. **Add what's live yourself,** since an agent you send may not see it: agents and sidebars still out or that reported back, and every open ask, even one raised before the user's last message. Where your tool keeps a record of its sessions and agents, read that too. Check each against the record rather than your memory: an agent you think is running may have landed, and a PR may have merged.
 
 ## The table
 
@@ -31,6 +31,4 @@ Start with one line saying how many things need the user, or that nothing does. 
 - **Item** names the work the way the user knows it, and where it is, such as a PR number or a branch.
 - **Next step** says who does what next. For Needs you, it's what the user has to decide or do; for Done, what follows, or "None".
 
-Write each row in plain words that stay true when read alone. Keep the columns as they are, since tables from several projects may be combined. Nothing goes after the table.
-
-Show it with `show-to-user`, so it reaches the user the way they like reports. When another session asked for it, send it the table, with whatever else it asked for, such as the project folder.
+Write each row in plain words that stay true when read alone. Nothing goes after the table. Show it the way `communication` says.

@@ -16,7 +16,7 @@ description: Review a code change against its goal and the project's principles,
 
 ## Review it
 
-1. Hand the change, the goal and any limits you were given to `find-bugs` in a fresh agent, so it runs alongside you. If you can't start one, run it yourself after your own pass. Leave hunting and proving bugs to it. If you spot a likely bug it didn't report, add it to its unconfirmed leads.
+1. Hand the change, the goal and any limits you were given to `find-bugs` in a fresh agent, alongside your own pass where your tool lets you keep working while it runs. If you can't start one, run it yourself after your own pass. Leave hunting and proving bugs to it. If you spot a likely bug it didn't report, add it to its unconfirmed leads.
 2. **The goal.** Check that everything it asks for is done, and nothing beyond it was added.
 3. **The principles.** Check the change against `principles`. Read the tests that cover the changed code, not only the changed tests, and flag changed behavior that no test would catch breaking.
 4. **Earlier comments.** Say whether each was resolved, not resolved, or answered, and whether the answer holds.

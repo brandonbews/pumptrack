@@ -16,7 +16,7 @@ description: Build a change and land it, from gathering what's asked through a f
 ## Steps
 
 1. **Gather the requirements.** Read the work wherever it's described, then the code it touches, and say what done looks like. Put the user's calls, such as scope or how something should behave, to them before you build, as `communication` says.
-2. **Build it** following `principles`, in small steps that each end in a check. For a bug, write a failing test first when one is cheap. Work on any branch the checkout isn't already on is built in a worktree of your own, inside the project in a folder git ignores, such as the one your tool uses for worktrees, so the user's checkout and other agents are untouched; remove the worktree once your work is committed, leaving the branch.
+2. **Build it** following `principles`, in small steps that each end in a check. For a bug, write a failing test first when one is cheap. Work on any branch the checkout isn't already on is built in a checkout of its own, so the user's checkout and other agents are untouched. If you were started in one, use it. Otherwise make a worktree inside the project in a folder git ignores, such as the one your tool uses for worktrees, and remove it once your work is committed, leaving the branch.
 3. **Prove it works** with what the project has: its tests, lint and formatting, and driving the app if the project has a way to. Note what ran and what it showed.
 4. **Get a fresh review** of anything beyond a typo or a one-line fix: hand the goal and the change to `review` in a fresh agent. If you can't start one, run it yourself and say so. Fix what must be fixed, and what should be fixed within the goal, then prove it again.
 5. **Land it** (below).
@@ -26,7 +26,7 @@ description: Build a change and land it, from gathering what's asked through a f
 Land it the way the brief says, else the project's instructions, and ask if neither says. It's usually one of:
 
 - A commit on the branch you were given.
-- A branch and a PR into the branch you were given, or the default one, ready for review with CI passing. Wait for CI and fix what fails.
+- A branch and a PR into the branch you were given, or the default one, ready for review with CI passing. Wait for CI the way your tool lets you, rather than checking over and over, and fix what fails. If your tool says not to wait, report the PR, its head commit and where its checks stand instead, so whoever sent you can see it through.
 - The same, then merged once CI passes and it's proven to work end to end. Merge only where the brief or the project says to.
 
 When fixing feedback on a PR, commit on its branch and don't push: pushing waits for the user's word. Where the project says to ask before pushing, ask, or if you can't, stop and report it.

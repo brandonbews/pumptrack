@@ -21,7 +21,6 @@ flowchart LR
   sidebar -->|"such as"| grill["grill"]
   pt -->|"before a compact,<br/>picked up after"| handoff["handoff"]
   pt -->|"when you're back"| catchup["catch-up"]
-  catchup -->|"shows you<br/>the table"| show["show-to-user"]
 ```
 
 A change goes to a builder, which gathers the requirements, builds in small steps that each end in a check, gets a fresh review before landing, and lands it the way the project lands work. Reviewing someone's PR is the same review, with a thin skill for the GitHub side: it posts the findings you pick in your name, and on a re-review it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and has each accepted fix built. Builders follow the principles, and reviewers use them to keep only the findings that matter.
@@ -43,18 +42,6 @@ flowchart LR
   review -->|"follows"| principles
 ```
 
-From the folder above all your projects, the lookout asks each session running on the same machine to catch it up and combines the answers on one page you can pin. You can direct work in any project from there too, and it passes that to the project's session.
-
-Across projects:
-
-```mermaid
-flowchart TD
-  you(["You"]) <-->|"one page to catch up,<br/>and work you direct"| lookout["pumptrack-lookout, in the<br/>folder above your projects"]
-  lookout <-->|"asks for a catch-up,<br/>passes your requests on"| a["a project's<br/>pumptrack"]
-  lookout <--> b["another's"]
-  lookout <--> c["..."]
-```
-
 ## The skills
 
 | Skill | What it does | Who calls it |
@@ -69,22 +56,18 @@ flowchart TD
 | `communication` | How agents talk to you and report back: the outcome first, a "Needs you" list, and your calls left to you | Skills that talk to you or report back, such as `pumptrack`, `build` and `review`, and your own instructions if you point them to it |
 | `review-pr` | The GitHub side of reviewing a PR: posts the findings you pick as a pending review in your name, and on a re-review checks whether your comments were resolved | `pumptrack`, or you |
 | `address-pr-feedback` | Goes through the open feedback on your PR, plans a fix or a reply for each with you, and has each accepted fix built as its own commit | `pumptrack`, or you |
-| `sidebar` | Spins a deep topic off into a fresh session you work in directly, which reports back when it's done | `pumptrack`, and the lookout |
+| `sidebar` | Spins a deep topic off into a fresh session you work in directly, which reports back when it's done | `pumptrack` |
 | `grill` | Interviews you about a plan in rounds, each question with a recommended answer, until nothing is open, then writes the plan and its tickets | You, usually in a sidebar |
 | `handoff` | Writes a session's live state to a file before a compact or a clear, and picks it up when the session starts again | `pumptrack` |
-| `catch-up` | One table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong | You, and the lookout |
-| `show-to-user` | Shows you a file, a diff or a report the way you like to see it, asking the first time | Any skill with something for you to read |
-| `pumptrack-lookout` | From the folder above your projects, asks each session running on the same machine for a catch-up, combines them on one page, and passes work you direct to the right session | You |
+| `catch-up` | One table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong | You |
 
 ## Install
 
-pumptrack works with agents that support [Agent Skills](https://agentskills.io/); the examples use Claude Code. `review-pr` and `address-pr-feedback` need the GitHub CLI (`gh`), signed in.
+pumptrack works with agents that support [Agent Skills](https://agentskills.io/); the examples use Claude Code. `review-pr` and `address-pr-feedback` need the GitHub CLI (`gh`), signed in. The deepest line nests agents four deep; where a tool caps nesting lower, as Claude Code does at three unless you raise `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`, the skills still work, but the last step runs without a fresh context.
 
 Clone this repo: `git clone https://github.com/brandonbews/pumptrack.git`. Keep the clone if you'd rather link the skills than copy them, so every change reaches every project. A skill added or removed later reaches a project when you run setup there again.
 
 In a project, ask an agent to read `skills/setup-pumptrack/SKILL.md` from the clone and follow it; for Claude Code, that's `claude "Read <clone>/skills/setup-pumptrack/SKILL.md and follow it"`. It asks whether the skills go in the project, committed or kept out of git, or just for you, installs them, and sets the project up, keeping what it finds in notes the project's instructions point to. It's safe to run again. Then start a session with `/pumptrack`.
-
-The lookout goes in the skills folder of the folder that holds your projects, not in any one of them, which is why it sits beside `skills/` as `pumptrack-lookout/`. Setting up offers to put it there. For Claude Code, with your projects in `~/projects`, from the clone: `mkdir -p ~/projects/.claude/skills && ln -s "$PWD/pumptrack-lookout" ~/projects/.claude/skills/pumptrack-lookout`. Then start a session in that folder with `/pumptrack-lookout`.
 
 ## Contributing
 
