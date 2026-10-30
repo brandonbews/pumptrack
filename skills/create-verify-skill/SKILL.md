@@ -15,7 +15,7 @@ Answer these from the code, and ask the user only what you can't find:
 
 - **Surface:** what a user touches, such as a web app, a CLI, a desktop app or an API. If there are several, pick the main one and note the rest.
 - **Start:** the project's own command to run it locally, with its ports, environment, seed data and sign-in.
-- **Drive:** a way to work it from a script. Use what the project already has, such as browser tests, before a generic way: a scripted browser for a web or desktop app, a terminal session for a CLI, plain HTTP for an API.
+- **Drive:** a way to work it from a script. Use what the project already has, such as browser tests, before a generic way.
 - **Proof:** what can be kept, such as screenshots, terminal output, responses, logs or stored data.
 - **Side by side:** whether two copies can run at once, each with its own ports and data, and whether starting one changes anything shared, such as a database or deployment others use.
 
@@ -27,7 +27,7 @@ Name it `verify-<app>`, and put it where pumptrack's skills were installed for t
 
 - **Start:** the command that brings the app up from empty, with any migrations and seed data, how to tell it's ready to use rather than just running, and how to stop it.
 - **Health check:** one read-only check that this copy is worth driving: it's up, it's running this checkout's code, and this run started it. Run it first, and again whenever something looks off. If two copies can't run side by side, say so, and never drive one this run didn't start.
-- **Drive:** how to work it, with real selectors and commands. Prefer stable handles, such as labels, routes and prompts, over positions.
+- **Drive:** how to work it, with real selectors and commands.
 - **Proof:** what to keep and where, in a folder out of git. Go through the user's real path, not test-only shortcuts. Keep the action and its result, not just the final screen, and check side effects, such as stored data, as well as what's shown.
 - **Clean up:** stop only what this run started, never by process name, and keep the proof.
 - **The map:** read `features.md` before driving, and fix it whenever a drive finds it wrong.
@@ -36,7 +36,7 @@ Any script it ships is executable, and the skill shows how to run it.
 
 ## Map the features
 
-Write `features.md` beside it, covering the three to five main features a user reaches, found from routes, commands, menus or docs. For each:
+Write `features.md` beside it, covering the three to five main features a user reaches. For each:
 
 - What it is, as a user sees it.
 - Every way a user gets to it.
@@ -48,7 +48,7 @@ If the seed data can't support a step, say why under its gotchas rather than wea
 
 ## Run it once
 
-Follow the new skill end to end: start, health check, drive one feature from the map, keep the proof, clean up, then check the proof is still there. Fix what fails, cleaning up after each failed try, and run it again; after three tries, report what's failing instead. Until it has run, it's a draft.
+Follow the new skill end to end: start, health check, drive one feature from the map, keep the proof, clean up, then check the proof is still there. Fix what fails, cleaning up after each failed try, and run it again; after three tries, report what's failing instead.
 
 ## Hand it over
 
