@@ -24,13 +24,13 @@ Change nothing yet.
 
 ## The user's setup
 
-These differ by person and machine, not by project, so they belong in the user's own setup. Check their own settings, not your environment, which whoever started you may have set. Change nothing yet.
+These differ by person and machine, not by project, so they belong in the user's own setup.
 
 - **Talking to them:** pumptrack's skills talk to the user the way `communication` says, but a skill loads only when something tells the agent to load it, and naming it isn't enough. Offer to add one line to their own agent instructions that does, such as "Load the `communication` skill when you start, and talk to me the way it says", so every session does. Offer it only when the skills are, or will be, installed in their personal skills folder, since those instructions load in every project.
 
 ## Ask, in one round
 
-Ask everything in one round, the way `communication` says, and skip what's already settled.
+Ask everything in one round, the way `communication` says.
 
 - **Install,** if needed: in the project, committed for everyone or kept out of git for this clone only (through the file `git rev-parse --git-path info/exclude` names), or just for the user, in their personal skills folder for every project on this machine. And what to do about each clash.
 - **What you couldn't find** about the project.
