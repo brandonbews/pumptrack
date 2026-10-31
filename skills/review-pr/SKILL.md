@@ -17,9 +17,11 @@ description: Review a GitHub pull request, post the findings the user keeps as a
 1. **What's been said:** reviews, inline threads with their replies and whether each is resolved (GitHub's GraphQL API has the thread state), and conversation comments.
 2. **The user's earlier reviews:** submitted reviews by the user's login. If the user already has a pending review on the PR, post nothing new, since GitHub allows one per person. Submit it if that's what the user asked for, and otherwise say so under "Needs you" and stop.
 
-Check out the PR's head in a temporary worktree, so the user's own checkout is untouched, and remove it when you're done.
+Check out the PR's head in a checkout of its own, such as a temporary worktree you remove when you're done, so the user's own checkout is untouched.
 
 ## Review
+
+Either way, `review` runs in a fresh agent, with leave to start the agents its skill calls for.
 
 - **First review:** hand `review` the goal, the PR's change as GitHub shows it (`gh pr diff`, or a three-dot diff against the base), and what's been said, so it doesn't repeat it.
 - **Re-review:** hand `review` the goal, the user's earlier comments with their replies, what others have said since, so it doesn't repeat it, and the change since the commit the user last reviewed, counting only the PR's own changes: if the base was merged in since, compare the PR's diff at that commit with its diff now. If that commit isn't in the head's history, as after a rebase, review the whole PR and say so. Say it's ready to approve when `review` says ready.

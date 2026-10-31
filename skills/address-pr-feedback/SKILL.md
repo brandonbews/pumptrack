@@ -32,7 +32,7 @@ Change nothing until the user approves the plan. If you can't ask them, stop her
 
 ## Act on it
 
-1. Hand each accepted item to `build` in a fresh agent, with the reviewer's words. Send them one at a time, so they don't collide on the branch, and each lands as its own commit on the PR's branch.
+1. Hand each accepted item to `build` in a fresh agent, with leave to start the agents its skill calls for, with the reviewer's words. Send them one at a time, so they don't collide on the branch, and each lands as its own commit on the PR's branch.
 2. Push only when the user says to.
 3. Draft a reply for each item: what changed, with the commit, or why not. Post the replies only when the user says to, in the item's thread or, for a review summary or conversation comment, in a conversation comment that quotes or links it. Never resolve threads.
 4. Offer to re-request review from the reviewers who left feedback, and do it on the user's word.
