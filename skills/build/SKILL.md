@@ -16,7 +16,7 @@ The work: a ticket, plan, PR comment, review finding or the brief itself. Given 
 1. **Gather the requirements.** Read the work wherever it's described, and say what done looks like. Put the user's calls, such as scope or how something should behave, to them before you build, as `communication` says.
 2. **Build it** following `principles`. For a bug, write a failing test first when one is cheap. Work on any branch the checkout isn't already on is built in a checkout of its own, so the user's checkout and other agents are untouched. If you were started in one, use it. Otherwise get one the way your tool gives out checkouts, or make a worktree inside the project in a folder git ignores, and remove it once your work is committed, leaving the branch.
 3. **Prove it works** with what the project has: its tests, lint and formatting, and driving the app if the project has a way to.
-4. **Get a fresh review** of anything beyond a typo or a one-line fix: hand the goal and the change to `review` in a fresh agent, with leave to start the agents its skill calls for. If you can't start one, run it yourself and say so. Fix what must be fixed, and what should be fixed within the goal, then prove it again.
+4. **Get a fresh review** of the whole of the work you were given, once it's built and proven, not of each step or commit. Skip it for a typo or a one-line fix. Hand the goal and the change to `review` in a fresh agent, with leave to start the agents its skill calls for. If you can't start one, run it yourself and say so. Fix what must be fixed, and what should be fixed within the goal, in this build rather than new ones, then prove it again.
 5. **Land it** (below).
 
 ## Land it
