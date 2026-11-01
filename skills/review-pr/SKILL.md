@@ -9,21 +9,19 @@ description: Review a GitHub pull request, post the findings the user keeps as a
 
 ## What you need
 
-- **The PR:** a number or URL. If you weren't told, use the current branch's PR, and say so.
 - **Whether to start over:** on a PR the user has reviewed before, re-review it unless they ask for a fresh full review.
 - **The user's picks,** if you were sent back with them: skip to Post, and post them as given on the commit named.
 
 ## Gather
 
-Use `gh` and GitHub's API.
+1. **What's been said:** reviews, inline threads with their replies and whether each is resolved (GitHub's GraphQL API has the thread state), and conversation comments.
+2. **The user's earlier reviews:** submitted reviews by the user's login. If the user already has a pending review on the PR, post nothing new, since GitHub allows one per person. Submit it if that's what the user asked for, and otherwise say so under "Needs you" and stop.
 
-1. **The PR:** its description, the ticket it links if any, its base and its head commit.
-2. **What's been said:** reviews, inline threads with their replies and whether each is resolved (GitHub's GraphQL API has the thread state), and conversation comments.
-3. **The user's earlier reviews:** submitted reviews by the user's login. If the user already has a pending review on the PR, post nothing new, since GitHub allows one per person. Submit it if that's what the user asked for, and otherwise say so under "Needs you" and stop.
-
-Check out the PR's head in a temporary worktree, so the user's own checkout is untouched, and remove it when you're done.
+Check out the PR's head in a checkout of its own, such as a temporary worktree you remove when you're done, so the user's own checkout is untouched.
 
 ## Review
+
+Either way, `review` runs in a fresh agent, with leave to start the agents its skill calls for.
 
 - **First review:** hand `review` the goal, the PR's change as GitHub shows it (`gh pr diff`, or a three-dot diff against the base), and what's been said, so it doesn't repeat it.
 - **Re-review:** hand `review` the goal, the user's earlier comments with their replies, what others have said since, so it doesn't repeat it, and the change since the commit the user last reviewed, counting only the PR's own changes: if the base was merged in since, compare the PR's diff at that commit with its diff now. If that commit isn't in the head's history, as after a rebase, review the whole PR and say so. Say it's ready to approve when `review` says ready.
@@ -39,4 +37,4 @@ If you can't ask the user, stop before posting and report. You'll be sent back w
 
 ## Report
 
-Report the way `communication` says, with an outcome such as "4 findings on #42 for you to pick" or "#42 is ready to approve", and asks such as which findings to post and whether to submit. Then the commit you reviewed, `review`'s findings, and on a re-review each earlier comment and where it stands. Once anything is posted, link the PR.
+Report the way `communication` says, with an outcome such as "4 findings on #42 for you to pick" or "#42 is ready to approve", and asks such as which findings to post and whether to submit. Then the commit you reviewed, `review`'s findings, and on a re-review each earlier comment and where it stands.

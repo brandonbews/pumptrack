@@ -9,7 +9,7 @@ description: Interview the user about a plan or design in rounds of questions, e
 
 ## Before asking
 
-Read the plan, the code it touches, the tracker, and the project's glossary if it keeps one: its instructions say where, or there's a `GLOSSARY.md`. Finding facts is your job, never the user's. Look up anything the code, docs or tools can answer, and send an agent for searches that would fill your context.
+Read the plan, the code it touches, the tracker, and the project's glossary if it keeps one: its instructions say where, or there's a `GLOSSARY.md`. Finding facts is your job, never the user's. Send an agent for searches that would fill your context.
 
 ## Ask in rounds
 

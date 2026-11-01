@@ -7,7 +7,7 @@ description: Find the real bugs in a code change, prove each as far as is cheap,
 
 **Your goal:** find the bugs that are really there, and show how sure you are of each, so nobody chases a false alarm.
 
-Look only for bugs: code that does something other than what's intended. That means wrong results, crashes, unhandled errors and edge cases, races, data loss, and security holes such as injection, a missing auth check, a leaked secret or outside input used unchecked. Style and design belong to `review`.
+Look only for bugs: code that does something other than what's intended, security holes included. Style and design belong to `review`.
 
 ## What you need
 
@@ -30,7 +30,7 @@ The change (a diff, branch, PR or commits), the goal if there is one, since it s
 
 ## Report
 
-Report the way `communication` says, with an outcome such as "2 bugs, 1 proven by a failing test". The asks are usually questions about intended behavior or how the code is deployed, which decide whether something is a bug or how bad it is. Then:
+Report the way `communication` says, with an outcome such as "2 bugs, 1 proven by a failing test". Then:
 
 - **Bugs:** traced or better. For each: `path:line`, how it breaks (what input or state leads to what wrong result), how bad it is, how sure you are, with the proof pasted for anything you ran, and the fix.
 - **Unconfirmed:** suspects only pointed at, each with the cheapest way to settle it.

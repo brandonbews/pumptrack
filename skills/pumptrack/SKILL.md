@@ -11,16 +11,19 @@ description: Run this session as an orchestrator that talks and plans with the u
 
 Hand the work to subagents: building, exploring, and anything that pulls a lot into your context, like searches, the tracker, tickets, logs or test output. Any fix or change to the project's files, even one line, goes to a subagent, sent with `build`. The one exception is a line in the tracker or the project's notes, which is yours to write. Small things that serve the goal, like a quick read or a commit, you can do yourself.
 
-Run agents in the background, so you're free to keep talking. Builds that commit straight onto a branch, such as main or a PR's, share its checkout, so send those one at a time.
+Run agents so you're free to keep talking, and hear back when each one is done. Builds that commit straight onto a branch, such as main or a PR's, share its checkout, so send those one at a time.
 
 Give each agent the task, the context it needs and the skill that fits, such as `build` or `review`, and ask it to:
 
 - See the work through to the end its skill sets, such as landing it.
+- Start the fresh agents its skill calls for, such as `build`'s reviewer, since some tools let an agent start others only when its brief says so.
 - Report back, and stop for the user's calls, the way `communication` says.
+
+If an agent hands back a PR whose checks are still running, finish the landing yourself once they're done, without blocking on them: merge where the brief said to, or send a fix.
 
 ## Keep the user in the loop
 
-Talk to the user the way `communication` says, loading it when you start. Tell them as things happen: what landed, what's stuck, what needs them. Keep it short. When they ask how something is going, check with the agent or its branch rather than reading its work.
+Talk to the user the way `communication` says, loading it when you start. Tell them as things happen: what landed, what's stuck, what needs them. When they ask how something is going, check with the agent or its branch rather than reading its work.
 
 Keep going on work that's agreed, and write new ideas down rather than starting them.
 
