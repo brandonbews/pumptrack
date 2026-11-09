@@ -57,7 +57,7 @@ flowchart LR
 | `review-pr` | The GitHub side of reviewing a PR: posts the findings you pick as a pending review in your name, and on a re-review checks whether your comments were resolved | `pumptrack`, or you |
 | `address-pr-feedback` | Goes through the open feedback on your PR, plans a fix or a reply for each with you, and has each accepted fix built as its own commit | `pumptrack`, or you |
 | `sidebar` | Spins a deep topic off into a fresh session you work in directly, which reports back when it's done | `pumptrack` |
-| `grill` | Interviews you about a plan in rounds, each question with a recommended answer, until nothing is open, then writes the plan and its tickets | You, usually in a sidebar |
+| `grill` | Interviews you about how a feature will work and what done looks like, in rounds, each question with a recommended answer, until nothing is open, then writes its tickets | You, usually in a sidebar |
 | `handoff` | Writes a session's live state to a file before a compact or a clear, and picks it up when the session starts again | `pumptrack` |
 | `catch-up` | One table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong | You |
 
