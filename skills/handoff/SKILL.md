@@ -9,7 +9,7 @@ description: Gather a session's live state into a handoff file, so the work carr
 
 ## Where it goes
 
-`.pumptrack/handoff.md` in the project, kept out of git for this clone only: add it to the file `git rev-parse --git-path info/exclude` names, if it isn't there. Where each session gets a checkout of its own, put it in the main checkout, so every session sees it. If the project's instructions name another place, such as one that syncs to another machine, use that.
+`.pumptrack/handoff.md` in the project, with a `.gitignore` beside it holding `*`, so the folder keeps itself out of git. Where each session gets a checkout of its own, put it in the main checkout, so every session sees it. If the project's instructions name another place, such as one that syncs to another machine, use that.
 
 ## Write one
 
