@@ -47,7 +47,7 @@ flowchart LR
 | Skill | What it does | Who calls it |
 |---|---|---|
 | `pumptrack` | Runs the session as an orchestrator that talks and plans with you while agents do the work | You, to start a session |
-| `setup-pumptrack` | Installs the skills and sets a project up: how it runs its checks, where work is tracked, where docs go, how work lands, and your own preferences | You, to set a project up or change its setup |
+| `setup-pumptrack` | Installs the skills and sets a project up: how it runs its checks, where work is tracked, how work lands, and your own preferences | You, to set a project up or change its setup |
 | `create-verify-skill` | Writes the project a skill that starts its app and drives it the way a user does to prove a change works, with a map of its features, then runs it once | `setup-pumptrack` offers it, or you |
 | `build` | Builds a change and lands it: gathers the requirements, builds in checked steps, gets a fresh review, and lands it the way the project does | `pumptrack`, and any skill with a fix to make |
 | `review` | Reviews a change against its goal and the principles, and reports only the findings worth acting on | `build` and `review-pr`, or you |
@@ -57,7 +57,7 @@ flowchart LR
 | `review-pr` | The GitHub side of reviewing a PR: posts the findings you pick as a pending review in your name, and on a re-review checks whether your comments were resolved | `pumptrack`, or you |
 | `address-pr-feedback` | Goes through the open feedback on your PR, plans a fix or a reply for each with you, and has each accepted fix built as its own commit | `pumptrack`, or you |
 | `sidebar` | Spins a deep topic off into a fresh session you work in directly, which reports back when it's done | `pumptrack` |
-| `grill` | Interviews you about a plan in rounds, each question with a recommended answer, until nothing is open, then writes the plan and its tickets | You, usually in a sidebar |
+| `grill` | Interviews you about how a feature will work and what done looks like, in rounds, each question with a recommended answer, until nothing is open, then writes its tickets | You, usually in a sidebar |
 | `handoff` | Writes a session's live state to a file before a compact or a clear, and picks it up when the session starts again | `pumptrack` |
 | `catch-up` | One table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong | You |
 

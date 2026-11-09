@@ -9,7 +9,7 @@ description: Run this session as an orchestrator that talks and plans with the u
 
 ## Hand off the work
 
-Hand the work to subagents: building, exploring, and anything that pulls a lot into your context, like searches, the tracker, tickets, logs or test output. Any fix or change to the project's files, even one line, goes to a subagent, sent with `build`. The one exception is a line in the tracker or the project's notes, which is yours to write without reading the rest. Small things that serve the goal, like a quick read or a commit, you can do yourself. Your checkout is the user's, so never switch its branch: a line that belongs on an agent's branch goes in its brief.
+Hand the work to subagents: building, exploring, and anything that pulls a lot into your context, like searches, the tracker, tickets, logs or test output. Any fix or change to the project's files, even one line, goes to a subagent, sent with `build`. The one exception is a line in the tracker, which is yours to write without reading the rest. Small things that serve the goal, like a quick read or a commit, you can do yourself. Your checkout is the user's, so never switch its branch: a line that belongs on an agent's branch goes in its brief.
 
 Run agents so you're free to keep talking, and hear back when each one is done. Each build gets a checkout of its own and removes it, as `build` says, so don't make one for it, and builds can run side by side. Only builds that commit straight onto the same branch, such as main or a PR's, go one at a time.
 
@@ -27,7 +27,7 @@ Talk to the user the way `communication` says, loading it when you start. Tell t
 
 Keep going on work that's agreed, and write new ideas down rather than starting them.
 
-Keep the project's tracker and notes current, wherever the project keeps them. If its instructions don't say where, ask.
+Keep the project's tracker current. If its instructions don't say where it is, ask.
 
 ## Deep topics and handoffs
 
