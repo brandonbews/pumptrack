@@ -1,12 +1,12 @@
 # pumptrack
 
-Open-source agent skills for orchestrating coding agents. An agent installs them by cloning this repo and copying `skills/` into a project. A personal project, published on GitHub for anyone to use.
+Open-source agent skills for orchestrating coding agents. A personal project.
 
 ## Layout
 
-- `skills/<name>/SKILL.md`: one folder per skill. Only `skills/` gets copied into projects, so repo files (README, this file) stay outside it.
-- `evals/`: scripted checks of how the skills behave, run through Claude Code's headless mode.
-- `internal/`: the maintainer's private roadmap, a gitignored clone of the `pumptrack-internal` repo, whose README says how to set it up. Contributors can ignore it; the skills work the same without it.
+- `skills/<name>/SKILL.md`: one folder per skill. Only these folders get installed, so repo files (README, this file) stay outside `skills/`.
+- `evals/`: scripted checks of how the skills behave.
+- `internal/`: the maintainer's private roadmap, a gitignored clone of the `pumptrack-internal` repo, whose README says how to set it up. Contributors can ignore it.
 
 ## Rules
 
@@ -15,7 +15,6 @@ Open-source agent skills for orchestrating coding agents. An agent installs them
 - **Don't name the person working on pumptrack in the repo.** Where a line needs someone, it's "the maintainer" or "the user". A GitHub URL or `owner/repo` slug that something needs in order to work, such as a clone URL, can stay.
 - **Skills stay portable.** Frontmatter keeps to the [Agent Skills spec](https://agentskills.io/specification), with `name` matching the folder name; a Claude Code-only field needs a good reason. Bodies say what to do in plain terms instead of naming Claude Code's tools. They leave the mechanics, such as running agents in the background, opening a session, waiting on CI or showing a file, to the tool the agent runs in and the user's own instructions, which win where they say how. Claude-specific wiring, such as hooks, stays out of the skill folders.
 - **Credit what we draw on** in the README's "Credits" section: one line per person or project, saying what we took or learned from it.
-- **The private repo's `ROADMAP.md` holds ideas, tickets and plans not yet built.** An entry comes out once it's built; the skills and the repo are their own record of what's built.
 
 ## Checks
 
@@ -27,7 +26,7 @@ There are no other tests, no linter, no CI and no app to run; the evals do the c
 
 ## Work and landing
 
-- Work is tracked in the private `internal/ROADMAP.md`. Without it, ideas and bugs go to a GitHub issue. Issues and PRs are welcome.
+- Work is tracked in the private `internal/ROADMAP.md`, which holds ideas, tickets and plans not yet built. An entry comes out once it's built; the skills and the repo are their own record of what's built. Without the roadmap, ideas and bugs go to a GitHub issue. Issues and PRs are welcome.
 - Work goes on a branch, and lands as a PR to `main`.
 - Commit and push only when the user says so for that piece of work. The maintainer merges.
 - A merge sets nothing off.
