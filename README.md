@@ -8,23 +8,31 @@ A pump track is a loop riders keep moving around without pedaling. Same idea her
 
 ## How it works
 
-**A session.** `pumptrack` stays light, and hands each thing to the skill that fits.
+**A session.** `pumptrack` talks and plans with you, and sends an agent for each piece of work.
 
 ```mermaid
 flowchart TD
   pt(["pumptrack"])
   pt -->|"a change"| build["build"]
-  pt -->|"a pull request"| pr["review-pr<br/>address-pr-feedback"]
-  pt -->|"a deep topic"| sidebar["sidebar"]
-  pt -->|"before a compact"| handoff["handoff"]
-  pt -->|"when you're back"| catchup["catch-up"]
+  pt -->|"someone's PR"| rpr["review-pr"]
+  pt -->|"feedback on<br/>your PR"| apf["address-pr-<br/>feedback"]
 ```
 
-**A change.** Each one gets an agent and a checkout of its own, so builds can run side by side and your checkout is left alone.
+**A change.** Each build gets a checkout of its own, so builds can run side by side and yours is left alone.
 
 ```mermaid
 flowchart LR
-  build["build<br/>builds and proves it,<br/>in its own checkout"] --> review["review + find-bugs<br/>fresh agents<br/>check it"] --> fix["build<br/>fixes what<br/>matters"] --> landed(["landed<br/>commit, PR<br/>or merge"])
+  build["build<br/>builds and<br/>proves it"] --> review["review +<br/>find-bugs<br/>check it fresh"] --> land["build<br/>fixes and<br/>lands it"]
+```
+
+**A long session.** These keep `pumptrack` light as the work grows.
+
+```mermaid
+flowchart TD
+  pt(["pumptrack"])
+  pt -->|"a deep topic"| sidebar["sidebar"]
+  pt -->|"before a compact"| handoff["handoff"]
+  pt -->|"when you're back"| catchup["catch-up"]
 ```
 
 ## Get started
@@ -47,7 +55,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  read["Reads your<br/>project"] --> ask["Asks you<br/>the rest"] --> install["Installs<br/>the skills"] --> notes["Records how you<br/>check, track and<br/>land work"]
+  read["Reads your<br/>project, asks<br/>you the rest"] --> install["Installs<br/>the skills"] --> notes["Records how you<br/>check, track and<br/>land work"]
 ```
 
 Good to know:
