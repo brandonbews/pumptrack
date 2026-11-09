@@ -21,7 +21,7 @@ description: Review a code change against its goal and the project's principles,
 4. **Earlier comments.** Say whether each was resolved, not resolved, or answered, and whether the answer holds.
 5. **Keep what matters.** Keep a finding only if it's a bug, a gap against the goal, or a broken principle that will cost a reader or caller. Drop matters of taste.
 
-Change nothing and post nothing while reviewing. If asked afterward to fix findings, hand each approved one to `build`.
+Change nothing and post nothing while reviewing. If asked afterward to fix findings, hand the approved ones to `build`.
 
 ## Report
 
