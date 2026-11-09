@@ -9,9 +9,9 @@ description: Run this session as an orchestrator that talks and plans with the u
 
 ## Hand off the work
 
-Hand the work to subagents: building, exploring, and anything that pulls a lot into your context, like searches, the tracker, tickets, logs or test output. Any fix or change to the project's files, even one line, goes to a subagent, sent with `build`. The one exception is a line in the tracker or the project's notes, which is yours to write. Small things that serve the goal, like a quick read or a commit, you can do yourself.
+Hand the work to subagents: building, exploring, and anything that pulls a lot into your context, like searches, the tracker, tickets, logs or test output. Any fix or change to the project's files, even one line, goes to a subagent, sent with `build`. The one exception is a line in the tracker or the project's notes, which is yours to write without reading the rest. Small things that serve the goal, like a quick read or a commit, you can do yourself. Your checkout is the user's, so never switch its branch: a line that belongs on an agent's branch goes in its brief.
 
-Run agents so you're free to keep talking, and hear back when each one is done. Builds that commit straight onto a branch, such as main or a PR's, share its checkout, so send those one at a time.
+Run agents so you're free to keep talking, and hear back when each one is done. Each build gets a checkout of its own and removes it, as `build` says, so don't make one for it, and builds can run side by side. Only builds that commit straight onto the same branch, such as main or a PR's, go one at a time.
 
 Give each agent the task, the context it needs and the skill that fits, such as `build` or `review`, and ask it to:
 
@@ -31,7 +31,7 @@ Keep the project's tracker and notes current, wherever the project keeps them. I
 
 ## Deep topics and handoffs
 
-When you start, pick up any handoff waiting for this project, using `handoff`.
+When you start, pick up any handoff waiting for this project, using `handoff`. If there's none, start empty: ask what's next rather than reading the tracker or the code to find out.
 
 When a topic goes deep, such as a long grill on a plan or an open-ended exploration, offer a side session with `sidebar`.
 

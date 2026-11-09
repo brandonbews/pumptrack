@@ -23,7 +23,7 @@ flowchart LR
   pt -->|"when you're back"| catchup["catch-up"]
 ```
 
-A change goes to a builder, which gathers the requirements, builds in small steps that each end in a check, gets a fresh review before landing, and lands it the way the project lands work. Reviewing someone's PR is the same review, with a thin skill for the GitHub side: it posts the findings you pick in your name, and on a re-review it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and has each accepted fix built. Builders follow the principles, and reviewers use them to keep only the findings that matter.
+A change goes to a builder, which works in a checkout of its own, so yours is left alone and builds can run side by side. It gathers the requirements, builds in small steps that each end in a check, gets a fresh review before landing, and lands it the way the project lands work. Reviewing someone's PR is the same review, with a thin skill for the GitHub side: it posts the findings you pick in your name, and on a re-review it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and has each accepted fix built. Builders follow the principles, and reviewers use them to keep only the findings that matter.
 
 Landing a change:
 
