@@ -6,14 +6,14 @@ in headless Claude Code sessions, and makes requests that never mention
 subagents. Then it looks at the orchestrator's own tool calls: it should send
 an agent, not edit files or dig through the project itself. Some cases also
 check what the session left behind: a handoff written and picked up, a change
-landed on a branch from a worktree, or one line changed in the tracker.
+landed on a branch from a checkout of its own, or one line changed in the tracker.
+Every case checks that the main checkout was left alone.
 
 The sessions leave out your user-level setup (personal skills, CLAUDE.md and
 rules, settings and MCP servers) and auto memory, so the results reflect
 pumptrack alone and don't depend on who runs them. They may edit files, run git
 and run the project's tests inside the throwaway project; anything else that
-would ask for permission is denied. Nothing can write into .git, so keeping a
-handoff out of git passes on the attempt. A full run uses about $3 at API prices; on a
+would ask for permission is denied. A full run uses about $10 at API prices; on a
 subscription that counts toward the plan's usage limits rather than being
 billed.
 
@@ -58,24 +58,21 @@ CASES = {
         "/clear",
         "/pumptrack",
     ], False),
-    "build-worktree": (["Add a DELETE /cart route that empties a cart."], True),
+    "build-branch": (["Add a DELETE /cart route that empties a cart."], True),
     # A small tracker edit it may make itself, after one targeted search or a read
     # of that part, or send an agent for; either passes.
     "tracker-edit": ([f"Mark {ITEM} done in the tracker."], False),
 }
 
-# Where a case differs: what the project says about landing work, whether the
-# orchestrator may write a line in the tracker itself, and how many calls of its
-# own it gets when checking the agent's branch is fair.
-LANDING = {"build-worktree": "Land work as a commit on a branch off main."}
-MAY_EDIT_TRACKER = {"tracker-edit", "build-worktree"}
-MAX_CALLS = {"build-worktree": 4}
+# Where a case differs in what the project says about landing work.
+LANDING = {"build-branch": "Land work as a commit on a branch off main."}
 
 AGENT_TOOLS = {"Agent", "Task"}
 EDIT_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
 WORK_TOOLS = {"Read", "Grep", "Glob", "Bash", "WebFetch", "WebSearch"}
-# A glance or two to write a good brief is fine; more means it did the work itself.
-MAX_OWN_CALLS = 3
+# A few glances, to write a good brief or check an agent's branch, are fine; more
+# means it did the work itself.
+MAX_OWN_CALLS = 4
 MAX_OWN_READING = 5000  # characters of tool output, outside what its agents report
 
 
@@ -308,16 +305,9 @@ def handoff_written(root, events):
     if not handoff.exists():
         return ["wrote no handoff"]
     shutil.copy(handoff, root.parent / f"{root.name}-handoff.md")
-    problems = []
-    exclude = root / git(root, "rev-parse", "--git-path", "info/exclude")
-    listed = exclude.exists() and ".pumptrack" in exclude.read_text()
-    tried = any("info/exclude" in str(args) for _, args in own_activity(events)[0])
-    if not listed and not tried:
-        problems.append("didn't keep the handoff out of git")
-    last = handoff.read_text().strip().splitlines()[-1].replace("’", "'").lower()
-    if "delete this file once you've picked it up" not in last:
-        problems.append("the handoff doesn't end by asking to be deleted")
-    return problems
+    if not git(root, "check-ignore", ".pumptrack/handoff.md"):
+        return ["didn't keep the handoff out of git"]
+    return []
 
 
 def handoff_picked_up(root, events):
@@ -348,16 +338,32 @@ def only_the_tracker(root):
     return [f"changed {', '.join(sorted(stray))}"] if (stray := changed - {"TRACKER.md"}) else []
 
 
-def landed_on_branch(root, events):
-    """A change that lands on a new branch is built in a worktree, which is gone
-    afterwards, and the main checkout is untouched beyond a line in the tracker."""
-    branches = git(root, "for-each-ref", "--format=%(refname:short)", "refs/heads").split()
-    if not any(b != "main" and git(root, "rev-list", f"main..{b}") for b in branches):
-        return ["setup: no branch was committed, so there was nothing to check"]
+def checkout_left_alone(root):
+    """The user's checkout stays theirs in every case: it never leaves main, even
+    for a while, and no work is committed in it beyond a line in the tracker.
+    Fast-forwarding it to a commit made elsewhere is fine. Git's own record of
+    what happened in this checkout says so."""
     problems = []
     if git(root, "branch", "--show-current") != "main":
         problems.append("left the main checkout off main")
-    problems += only_the_tracker(root)
+    for entry in git(root, "reflog", "--format=%H %gs", "HEAD").splitlines():
+        commit, _, action = entry.partition(" ")
+        if action.startswith("checkout: moving from main to"):
+            problems.append("switched the main checkout to another branch")
+        elif action.startswith(("commit:", "commit (amend):")):
+            if set(git(root, "show", "--name-only", "--format=", commit).split()) - {"TRACKER.md"}:
+                problems.append("committed work in the main checkout")
+    return sorted(set(problems))
+
+
+def landed_on_branch(root, events):
+    """A change that lands on a new branch is built in a checkout of its own, which
+    is gone afterwards, and the main checkout is untouched beyond a line in the
+    tracker."""
+    branches = git(root, "for-each-ref", "--format=%(refname:short)", "refs/heads").split()
+    if not any(b != "main" and git(root, "rev-list", f"main..{b}") for b in branches):
+        return ["setup: no branch was committed, so there was nothing to check"]
+    problems = only_the_tracker(root)
     if len(git(root, "worktree", "list").splitlines()) > 1:
         problems.append("left a worktree behind")
     return problems
@@ -372,7 +378,7 @@ def tracker_marked(root, events):
     return problems
 
 
-CHECKS = {"handoff-roundtrip": handoff_picked_up, "build-worktree": landed_on_branch, "tracker-edit": tracker_marked}
+CHECKS = {"handoff-roundtrip": handoff_picked_up, "build-branch": landed_on_branch, "tracker-edit": tracker_marked}
 
 
 def run_case(name, turns, must_delegate, model, workdir):
@@ -392,17 +398,19 @@ def run_case(name, turns, must_delegate, model, workdir):
             break
     calls, reading = own_activity(events)
     # Looking for a handoff, reading it and removing it is the orchestrator's own
-    # job, and so is a line in the tracker where the case allows one.
-    own = [(n, a) for n, a in calls if ".pumptrack" not in str(a) and not (name in MAY_EDIT_TRACKER and tracker_write(n, a))]
+    # job, and so is a line in the tracker.
+    own = [(n, a) for n, a in calls if ".pumptrack" not in str(a) and not tracker_write(n, a)]
     own_calls = sum(n in WORK_TOOLS for n, _ in own)
     if must_delegate and not failure and not any(n in AGENT_TOOLS for n, _ in calls):
         problems.append("never sent an agent")
     if any(n in EDIT_TOOLS for n, _ in own):
         problems.append("edited files itself")
-    if own_calls > MAX_CALLS.get(name, MAX_OWN_CALLS):
+    if own_calls > MAX_OWN_CALLS:
         problems.append(f"made {own_calls} calls of its own work")
     if len(reading) > MAX_OWN_READING:
         problems.append(f"read {len(reading):,} characters itself")
+    if not failure:
+        problems += checkout_left_alone(root)
     if name in CHECKS and not failure:
         problems += CHECKS[name](root, events)
     summary = "; ".join(problems) or ("sent an agent" if must_delegate else "stayed light")
