@@ -8,13 +8,13 @@ A pump track is a loop riders keep moving around without pedaling. Same idea her
 
 ## How it works
 
-**A session.** `pumptrack` talks and plans with you, and sends an agent for each piece of work.
+**The work goes out.** `pumptrack` talks and plans with you, and sends an agent for each piece of work.
 
 ```mermaid
 flowchart TD
   pt(["pumptrack"])
   pt -->|"a change"| build["build"]
-  pt -->|"someone's PR"| rpr["review-pr"]
+  pt -->|"a PR to review"| rpr["review-pr"]
   pt -->|"feedback on<br/>your PR"| apf["address-pr-<br/>feedback"]
 ```
 
@@ -25,7 +25,7 @@ flowchart LR
   build["build<br/>builds and<br/>proves it"] --> review["review +<br/>find-bugs<br/>check it fresh"] --> land["build<br/>fixes and<br/>lands it"]
 ```
 
-**A long session.** These keep `pumptrack` light as the work grows.
+**A long session.** These carry it through a deep topic, a compact and time away.
 
 ```mermaid
 flowchart TD
