@@ -56,9 +56,8 @@ root = project("base")
 test = subprocess.run([sys.executable, "-m", "unittest"], cwd=root, capture_output=True, text=True)
 expect("tests pass in Tiny Shop", test.returncode, 0)
 expect("clean after tests (pycache ignored)", d.git(root, "status", "--porcelain"), "")
-expect("exclude path is relative to root", (root / d.git(root, "rev-parse", "--git-path", "info/exclude")).exists(), True)
 expect("default landing", "commit on main." in (root / "CLAUDE.md").read_text(), True)
-expect("worktree landing", "branch off main." in (project("landing", d.LANDING["build-worktree"]) / "CLAUDE.md").read_text(), True)
+expect("worktree landing", "branch off main." in (project("landing", d.LANDING["build-branch"]) / "CLAUDE.md").read_text(), True)
 
 # tracker_marked
 root = project("tracker-edit")
@@ -80,7 +79,7 @@ expect("tracker: committed edit still passes", d.tracker_marked(root, []), [])
 expect("tracker: item missing fails", d.tracker_marked(root, []), [f"{d.ITEM} isn't marked done"])
 
 # landed_on_branch
-root = project("build-worktree", d.LANDING["build-worktree"])
+root = project("build-branch", d.LANDING["build-branch"])
 expect("branch: nothing committed is a setup failure", d.landed_on_branch(root, []), ["setup: no branch was committed, so there was nothing to check"])
 subprocess.run(["git", "-C", str(root), "worktree", "add", "-q", ".claude/worktrees/cart", "-b", "empty-cart"], check=True)
 expect("branch: branch without commits is still setup", d.landed_on_branch(root, []), ["setup: no branch was committed, so there was nothing to check"])
@@ -102,8 +101,25 @@ expect("branch: a stray edit to src fails", d.landed_on_branch(root, []), ["chan
 subprocess.run(["git", "-C", str(root), "checkout", "-q", "--", "src/cart.py"], check=True)
 commit(root, "Track SHOP-081")
 expect("branch: a committed tracker line on main passes", d.landed_on_branch(root, []), [])
-subprocess.run(["git", "-C", str(root), "checkout", "-q", "empty-cart"], check=True)
-expect("branch: main checkout on the branch fails", d.landed_on_branch(root, []), ["left the main checkout off main", "changed src/cart.py"])
+
+# checkout_left_alone: the same project, whose main checkout has so far only committed a tracker line.
+expect("checkout: a tracker line committed on main passes", d.checkout_left_alone(root), [])
+subprocess.run(["git", "-C", str(root), "checkout", "-q", "-b", "in-place"], check=True)
+expect("checkout: left on another branch fails", d.checkout_left_alone(root), ["left the main checkout off main", "switched the main checkout to another branch"])
+subprocess.run(["git", "-C", str(root), "checkout", "-q", "main"], check=True)
+expect("checkout: switched away and back fails", d.checkout_left_alone(root), ["switched the main checkout to another branch"])
+root = project("fast-forward")
+wt = root / ".claude" / "worktrees" / "typo"
+subprocess.run(["git", "-C", str(root), "worktree", "add", "-q", str(wt), "-b", "typo"], check=True)
+(wt / "README.md").write_text("# Tiny Shop\n")
+commit(wt, "Fix the typo")
+subprocess.run(["git", "-C", str(root), "worktree", "remove", str(wt)], check=True)
+subprocess.run(["git", "-C", str(root), "merge", "-q", "--ff-only", "typo"], check=True)
+expect("checkout: fast-forwarding main to a commit made elsewhere passes", d.checkout_left_alone(root), [])
+root = project("built-in-place")
+(root / "src" / "cart.py").write_text((root / "src" / "cart.py").read_text() + "# built here\n")
+commit(root, "Build in the main checkout")
+expect("checkout: work committed in the main checkout fails", d.checkout_left_alone(root), ["committed work in the main checkout"])
 
 # handoff_written
 root = project("handoff-roundtrip")
@@ -112,25 +128,11 @@ handoff = root / ".pumptrack" / "handoff.md"
 handoff.parent.mkdir()
 body = "# Handoff\n\nA pumptrack session. Start with /pumptrack.\n\n## Read first\n\n- TRACKER.md\n\n## Open asks\n\n- None\n\n"
 handoff.write_text(body + "Delete this file once you've picked it up.\n")
-expect("handoff: not excluded and not tried fails", d.handoff_written(root, []), ["didn't keep the handoff out of git"])
-tried = tool_events([("Bash", {"command": "echo '.pumptrack/' >> .git/info/exclude"}, "Permission denied")])
-expect("handoff: a denied attempt passes", d.handoff_written(root, tried), [])
-tried_edit = tool_events([("Edit", {"file_path": str(root / ".git/info/exclude"), "old_string": "x", "new_string": "y"}, "Permission denied")])
-expect("handoff: a denied edit passes", d.handoff_written(root, tried_edit), [])
-sub = tool_events([("Bash", {"command": "echo '.pumptrack/' >> .git/info/exclude"}, "ok")])
-sub[0]["parent_tool_use_id"] = "agent"
-sub[1]["parent_tool_use_id"] = "agent"
-expect("handoff: a subagent's attempt doesn't count", d.handoff_written(root, sub), ["didn't keep the handoff out of git"])
-with open(root / ".git" / "info" / "exclude", "a") as f:
-    f.write(".pumptrack/\n")
-expect("handoff: listed in exclude passes", d.handoff_written(root, []), [])
+expect("handoff: not ignored fails", d.handoff_written(root, []), ["didn't keep the handoff out of git"])
+(handoff.parent / ".gitignore").write_text("*\n")
+expect("handoff: a folder that ignores itself passes", d.handoff_written(root, []), [])
+expect("handoff: and leaves git clean", d.git(root, "status", "--porcelain"), "")
 expect("handoff: a copy was kept", (work / "handoff-roundtrip-handoff.md").read_text() == handoff.read_text(), True)
-handoff.write_text(body + "**Delete this file once you’ve picked it up.**\n")
-expect("handoff: bold closing line with a curly quote passes", d.handoff_written(root, []), [])
-handoff.write_text(body + "That's everything.\n")
-expect("handoff: wrong closing line fails", d.handoff_written(root, []), ["the handoff doesn't end by asking to be deleted"])
-handoff.write_text(body + "Delete this file once you've picked it up.\n")
-d.handoff_written(root, [])  # refresh the copy
 
 # handoff_picked_up
 numbered = "\n".join(f"{i + 1:6}\t{line}" for i, line in enumerate(handoff.read_text().splitlines()))
@@ -161,8 +163,9 @@ def fake_turn(cwd, prompt, session, model, logfile):
     if prompt == "I'm about to clear. Write a handoff.":
         (cwd / ".pumptrack").mkdir(exist_ok=True)
         (cwd / ".pumptrack" / "handoff.md").write_text(body + "Delete this file once you've picked it up.\n")
+        (cwd / ".pumptrack" / ".gitignore").write_text("*\n")
         return tool_events([("Write", {"file_path": str(cwd / ".pumptrack/handoff.md")}, "ok"),
-                            ("Bash", {"command": "echo .pumptrack/ >> .git/info/exclude"}, "denied")], "Handoff ready."), "s1", 0.5, None
+                            ("Write", {"file_path": str(cwd / ".pumptrack/.gitignore")}, "ok")], "Handoff ready."), "s1", 0.5, None
     if prompt == "/pumptrack" and session is None and (cwd / ".pumptrack" / "handoff.md").exists():
         text = (cwd / ".pumptrack" / "handoff.md").read_text()
         (cwd / ".pumptrack" / "handoff.md").unlink()
@@ -195,9 +198,9 @@ expect("run: tracker edit by itself passes", (passed, summary), (True, "stayed l
 name, passed, summary, calls, reading, cost = d.run_case("fix", *d.CASES["fix"], None, work2)
 expect("run: other cases unchanged (fix with no agent fails)", (passed, summary), (False, "never sent an agent"))
 log.clear()
-name, passed, summary, calls, reading, cost = d.run_case("build-worktree", *d.CASES["build-worktree"], None, work2)
-expect("run: build-worktree with nothing landed", summary, "never sent an agent; setup: no branch was committed, so there was nothing to check")
-expect("run: build-worktree project says branch", "branch off main" in (work2 / "build-worktree" / "CLAUDE.md").read_text(), True)
+name, passed, summary, calls, reading, cost = d.run_case("build-branch", *d.CASES["build-branch"], None, work2)
+expect("run: build-branch with nothing landed", summary, "never sent an agent; setup: no branch was committed, so there was nothing to check")
+expect("run: build-branch project says branch", "branch off main" in (work2 / "build-branch" / "CLAUDE.md").read_text(), True)
 
 # Every session allows git and the project's test command, nothing else.
 captured = {}
@@ -216,7 +219,7 @@ allowed = cmd[cmd.index("--allowedTools") + 1:cmd.index("--permission-prompts")]
 expect("run: every session allows git and the tests only", allowed, ["Bash(git *)", "Bash(python3 -m unittest *)"])
 
 
-# Own edits: the tracker is allowed in tracker-edit and build-worktree, nothing else anywhere.
+# Own edits: a line in the tracker is allowed in every case, nothing else anywhere.
 def editing(path):
     return lambda cwd, prompt, session, model, logfile: (tool_events([("Edit", {"file_path": str(cwd / path)}, "ok")], "ok"), "s", 0.1, None)
 
@@ -226,8 +229,8 @@ name, passed, summary, *_ = d.run_case("tracker", *d.CASES["tracker"], None, wor
 expect("run: an own edit still fails elsewhere", summary, "edited files itself")
 work3 = Path(tempfile.mkdtemp(prefix="check-delegation-edits-"))
 d.run_turn = editing("TRACKER.md")
-name, passed, summary, *_ = d.run_case("build-worktree", *d.CASES["build-worktree"], None, work3)
-expect("run: build-worktree may edit the tracker itself", "edited files itself" in summary, False)
+name, passed, summary, *_ = d.run_case("fix", *d.CASES["fix"], None, work3)
+expect("run: any case may edit the tracker itself", "edited files itself" in summary, False)
 d.run_turn = editing("src/cart.py")
 name, passed, summary, *_ = d.run_case("tracker-edit", *d.CASES["tracker-edit"], None, work3)
 expect("run: tracker-edit may not edit src itself", "edited files itself" in summary, True)
@@ -242,7 +245,7 @@ expect("write: grep of the tracker is not a write", d.tracker_write("Bash", {"co
 expect("write: redirect elsewhere", d.tracker_write("Bash", {"command": "echo x >> notes.md"}), False)
 
 
-# The call budget: 4 for build-worktree, 3 elsewhere. The stand-in lands the branch by hand.
+# The call budget: 4 calls of its own. The stand-in lands the branch by hand.
 def landing(prompt, cwd):
     if prompt.startswith("Add a DELETE"):
         wt = cwd / ".claude" / "worktrees" / "cart"
@@ -265,14 +268,9 @@ def budget(n):
 for n, want in [(4, "sent an agent"), (5, "made 5 calls of its own work")]:
     d.run_turn = budget(n)
     work4 = Path(tempfile.mkdtemp(prefix="check-delegation-budget-"))
-    name, passed, summary, *_ = d.run_case("build-worktree", *d.CASES["build-worktree"], None, work4)
-    expect(f"budget: build-worktree with {n} counted calls", summary, want)
+    name, passed, summary, *_ = d.run_case("build-branch", *d.CASES["build-branch"], None, work4)
+    expect(f"budget: build-branch with {n} counted calls", summary, want)
     shutil.rmtree(work4)
-d.run_turn = budget(4)
-work4 = Path(tempfile.mkdtemp(prefix="check-delegation-budget-"))
-name, passed, summary, *_ = d.run_case("fix", *d.CASES["fix"], None, work4)
-expect("budget: fix with 4 counted calls still fails", summary, "made 4 calls of its own work")
-shutil.rmtree(work4)
 
 shutil.rmtree(work)
 shutil.rmtree(work2)

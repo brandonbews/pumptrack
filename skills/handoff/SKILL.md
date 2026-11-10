@@ -9,11 +9,11 @@ description: Gather a session's live state into a handoff file, so the work carr
 
 ## Where it goes
 
-`.pumptrack/handoff.md` in the project, kept out of git for this clone only: add it to the file `git rev-parse --git-path info/exclude` names, if it isn't there. Where each session gets a checkout of its own, put it in the main checkout, so every session sees it. If the project's instructions name another place, such as one that syncs to another machine, use that.
+`.pumptrack/handoff.md` in the project, with a `.gitignore` beside it holding `*`, so the folder keeps itself out of git. Where each session gets a checkout of its own, put it in the main checkout, so every session sees it. If the project's instructions name another place, such as one that syncs to another machine, use that.
 
 ## Write one
 
-1. **Record first.** Put decisions not yet recorded, and work not yet in the tracker, where the project keeps them, so the handoff points to files rather than carrying them.
+1. **Record first.** Put work not yet in the tracker there, with what was decided about it, so the handoff points to tickets rather than carrying them.
 2. **Agents still running** may not survive a clear or a new session, depending on your tool. Before either, wait for them to land, unless you know they'll survive it or the user says not to.
 3. **Write the handoff,** replacing any already there:
    - What this session is, such as a `pumptrack` session, and the skill to start it with.

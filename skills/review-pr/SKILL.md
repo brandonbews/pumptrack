@@ -21,17 +21,17 @@ Check out the PR's head in a checkout of its own, so the user's own checkout is 
 
 ## Review
 
-Either way, `review` runs in a fresh agent, with leave to start the agents its skill calls for.
+Run `review` in a fresh agent, with leave to start the agents its skill calls for, and hand it:
 
-- **First review:** hand `review` the goal, the PR's change as GitHub shows it (only the PR's own changes, with nothing the base gained since), and what's been said, so it doesn't repeat it.
-- **Re-review:** hand `review` the goal, the user's earlier comments with their replies, what others have said since, so it doesn't repeat it, and the change since the commit the user last reviewed, counting only the PR's own changes: if the base was merged in since, compare the PR's diff at that commit with its diff now. If that commit isn't in the head's history, as after a rebase, review the whole PR and say so. Say it's ready to approve when `review` says ready.
+- **First review:** the goal, the PR's change as GitHub shows it (only the PR's own changes, with nothing the base gained since), and what's been said, so it doesn't repeat it.
+- **Re-review:** the goal, the user's earlier comments with their replies, what others have said since, so it doesn't repeat it, and the change since the commit the user last reviewed. Count only the PR's own changes: if the base was merged in since, compare the PR's diff at that commit with its diff now. If that commit isn't in the head's history, as after a rebase, review the whole PR and say so. Say it's ready to approve when `review` says ready.
 
 ## Post
 
 1. Go through the findings with the user, and keep the ones they pick, worded as they want.
 2. Post them as a pending review on the commit you reviewed: one comment per finding on its line, and no approve, request-changes or comment action yet, since any of those submits it for everyone to see. Check it's still pending before you report, and say so first if it isn't. GitHub only takes comments on lines in the diff, so findings elsewhere go in the summary.
 3. Write the summary and show it to the user. Keep it in a temp file, named in your report, rather than on GitHub until submitting: GitHub's own dialog opens with an empty box and replaces a summary set through the API with it.
-4. Submit only when the user says to, with the event they choose (approve, request changes or comment; only comment on the user's own PR) and the summary, submitting the pending review if there is one, or a new review if not.
+4. Submit only when the user says to, with the event they choose (approve, request changes or comment; on the user's own PR, only comment) and the summary, submitting the pending review if there is one, or a new review if not.
 
 If you can't ask the user, stop before posting and report. You'll be sent back with the user's picks.
 
