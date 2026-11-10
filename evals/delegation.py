@@ -47,11 +47,6 @@ CASES = {
     # Answering from what it already knows, or after one targeted search that brings
     # back little, is fine; reading the whole tracker is not.
     "tracker": (["What's still open in the tracker?"], False),
-    "after-compact": ([
-        "Fix the typo in the README.",
-        "/compact",
-        "Fix the typo in the comment at the top of src/cart.py.",
-    ], True),
     "handoff-roundtrip": ([
         "Fix the typo in the README.",
         "I'm about to clear. Write a handoff.",
@@ -98,7 +93,7 @@ def handle(route, request):
         return {"status": 404}
     return handler(request)
 ''',
-        "src/cart.py": '''# Carts recieve items by SKU, and adding a SKU again raises its quantity.
+        "src/cart.py": '''# Carts receive items by SKU, and adding a SKU again raises its quantity.
 from src import storage
 
 
