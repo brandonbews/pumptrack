@@ -16,7 +16,7 @@ Change nothing yet.
 - **Install:** whether pumptrack's skills are installed for this project, in its skills folder or the user's personal one. If they're linked, any skill in the clone that isn't linked yet, or link whose skill is gone, counts as missing. Note any skill already installed with the same name or doing the same job, such as another code review skill, since the two compete for the same requests, and which one the tool lets win.
 - **The project:** read its agent instructions, README, contributing guide, build and package files, CI config, connected tools, git remote and remote branches. Look for:
   - **Checks:** the commands for tests, lint, formatting and type checks. Run each one this machine can, in its check-only form where it has one, skipping any that touches something shared, such as a deployment, and revert anything a check changes, counting it as failed. Note any that fail, and what the machine lacks for the rest, such as secrets, a service or another machine, without working around it.
-  - **Work:** where it's tracked, such as an issue tracker, Jira or a file.
+  - **Work:** where it's tracked, such as an issue tracker, a board or a file.
   - **Landing:** commits to the main branch, PRs or stacks; whether to ask before pushing; and who merges, and what a merge sets off, such as a deploy.
   - **The app:** whether users run something, such as a site, a CLI or an API, and whether agents have a way to start it, drive it the way a user does and keep proof.
 

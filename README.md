@@ -61,7 +61,7 @@ flowchart LR
 Good to know:
 
 - It works with any agent that supports [Agent Skills](https://agentskills.io/). The examples use Claude Code.
-- `review-pr` and `address-pr-feedback` need the GitHub CLI (`gh`), signed in.
+- `review-pr` and `address-pr-feedback` need a way to act on GitHub as you, such as the GitHub CLI (`gh`) signed in.
 - Setup copies the skills into the project or your own skills folder. Keep the clone to link them instead, so every change reaches every project. Run setup again to pick up a skill added or removed later.
 - The deepest chain nests agents four deep: `address-pr-feedback`, `build`, `review`, `find-bugs`. Where a tool caps nesting lower, the steps below the cap run inside their caller instead of with fresh eyes. Claude Code caps it at three unless you raise `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`, and Codex at one by default.
 
