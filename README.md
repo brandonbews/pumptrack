@@ -2,72 +2,101 @@
 
 Agent skills that keep your coding agents moving in rhythm and on track, no pedaling required.
 
-A pump track is a loop of rollers and berms that riders keep moving around without pedaling: they keep their speed by pushing into the terrain at the right moments. pumptrack brings the same idea to agent work. The loop carries itself, and your effort goes into a few well-timed inputs.
+You talk and plan with one agent, `pumptrack`. It sends other agents to build, review and land the work, and tells you what needs you.
+
+A pump track is a loop riders keep moving around without pedaling. Same idea here: the loop carries itself, and your effort goes into a few well-timed inputs.
 
 ## How it works
 
-You talk and plan with `pumptrack`, the agent at the start of every line. It stays light: building, exploring and anything else that would fill its context goes to an agent it sends out, and as they report back it tells you what landed, what's stuck and what needs you. When a topic goes deep, it opens a sidebar, a session you work in directly, which tells it when it's done. Before you compact or clear, a handoff writes down what's still live, and pumptrack picks it up when it starts again. When you come back to a session you've lost track of, `/catch-up` gives you one table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong.
+**The work goes out.** `pumptrack` talks and plans with you, and sends an agent for each piece of work.
 
-In the pictures, a rider is an agent pumptrack sends out, and a line is the path it takes through the skills, such as build, then review, then a bug check.
+```mermaid
+flowchart TD
+  pt(["pumptrack"])
+  pt -->|"a change"| build["build"]
+  pt -->|"a PR to review"| rpr["review-pr"]
+  pt -->|"feedback on<br/>your PR"| apf["address-pr-<br/>feedback"]
+```
 
-A session:
+**A change.** Each build gets a checkout of its own, so builds can run side by side and yours is left alone.
 
 ```mermaid
 flowchart LR
-  you(["You"]) <-->|"talk and plan"| pt["pumptrack"]
-  you -->|"set up a<br/>project, once"| setup["setup-pumptrack"] -->|"offers"| verify["create-verify-skill"]
-  pt -->|"sends riders,<br/>hears back"| riders["riders, one<br/>line each"]
-  pt -->|"briefs a deep topic,<br/>hears when it's done"| sidebar["sidebar, which you<br/>work in directly"]
-  sidebar -->|"such as"| grill["grill"]
-  pt -->|"before a compact,<br/>picked up after"| handoff["handoff"]
+  build["build<br/>builds and<br/>proves it"] --> review["review +<br/>find-bugs<br/>check it fresh"] --> land["build<br/>fixes and<br/>lands it"]
+```
+
+**A long session.** These carry it through a deep topic, a compact and time away.
+
+```mermaid
+flowchart TD
+  pt(["pumptrack"])
+  pt -->|"a deep topic"| sidebar["sidebar"]
+  pt -->|"before a compact"| handoff["handoff"]
   pt -->|"when you're back"| catchup["catch-up"]
 ```
 
-A change goes to a builder, which works in a checkout of its own, so yours is left alone and builds can run side by side. It gathers the requirements, builds in small steps that each end in a check, gets a fresh review before landing, and lands it the way the project lands work. Reviewing someone's PR is the same review, with a thin skill for the GitHub side: it posts the findings you pick in your name, and on a re-review it checks whether your comments were resolved and says whether the PR is ready to approve. When reviewers leave feedback on your own PR, pumptrack goes through it with you and has each accepted fix built. Builders follow the principles, and reviewers use them to keep only the findings that matter.
+## Get started
 
-Landing a change:
+1. Clone this repo:
+
+   ```sh
+   git clone https://github.com/brandonbews/pumptrack.git
+   ```
+
+2. In your project, have your agent follow the setup skill. With Claude Code, where `<clone>` is the path to your clone:
+
+   ```sh
+   claude "Read <clone>/skills/setup-pumptrack/SKILL.md and follow it"
+   ```
+
+3. Start a session with `/pumptrack`.
+
+**What setup does,** once per project. It's safe to run again.
 
 ```mermaid
 flowchart LR
-  pt["pumptrack"]
-  pt -->|"a change"| build["build"]
-  build -->|"fresh eyes<br/>before landing"| review["review"]
-  review -->|"runs alongside"| bugs["find-bugs"]
-  pt -->|"someone's PR"| prreview["review-pr"]
-  prreview --> review
-  pt -->|"feedback on<br/>your PR"| feedback["address-pr-feedback"]
-  feedback -->|"accepted fixes"| build
-  feedback -->|"claimed bugs"| bugs
-  build -->|"follows"| principles[["principles"]]
-  review -->|"follows"| principles
+  read["Reads your<br/>project, asks<br/>you the rest"] --> install["Installs<br/>the skills"] --> notes["Records how you<br/>check, track and<br/>land work"]
 ```
+
+Good to know:
+
+- It works with any agent that supports [Agent Skills](https://agentskills.io/). The examples use Claude Code.
+- `review-pr` and `address-pr-feedback` need the GitHub CLI (`gh`), signed in.
+- Setup copies the skills into the project or your own skills folder. Keep the clone to link them instead, so every change reaches every project. Run setup again to pick up a skill added or removed later.
+- The deepest chain nests agents four deep: `address-pr-feedback`, `build`, `review`, `find-bugs`. Where a tool caps nesting lower, the steps below the cap run inside their caller instead of with fresh eyes. Claude Code caps it at three unless you raise `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`, and Codex at one by default.
 
 ## The skills
 
-| Skill | What it does | Who calls it |
-|---|---|---|
-| `pumptrack` | Runs the session as an orchestrator that talks and plans with you while agents do the work | You, to start a session |
-| `setup-pumptrack` | Installs the skills and sets a project up: how it runs its checks, where work is tracked, how work lands, and your own preferences | You, to set a project up or change its setup |
-| `create-verify-skill` | Writes the project a skill that starts its app and drives it the way a user does to prove a change works, with a map of its features, then runs it once | `setup-pumptrack` offers it, or you |
-| `build` | Builds a change and lands it: gathers the requirements, builds in checked steps, gets a fresh review, and lands it the way the project does | `pumptrack`, and any skill with a fix to make |
-| `review` | Reviews a change against its goal and the principles, and reports only the findings worth acting on | `build` and `review-pr`, or you |
-| `find-bugs` | Finds the real bugs in a change, proves each as far as is cheap, and says how sure it is | `review` and `address-pr-feedback`, or you |
-| `principles` | The coding principles builders follow and reviewers judge by | `build` and `review` |
-| `communication` | How agents talk to you and report back: the outcome first, a "Needs you" list, and your calls left to you | Skills that talk to you or report back, such as `pumptrack`, `build` and `review`, and your own instructions if you point them to it |
-| `review-pr` | The GitHub side of reviewing a PR: posts the findings you pick as a pending review in your name, and on a re-review checks whether your comments were resolved | `pumptrack`, or you |
-| `address-pr-feedback` | Goes through the open feedback on your PR, plans a fix or a reply for each with you, and has each accepted fix built as its own commit | `pumptrack`, or you |
-| `sidebar` | Spins a deep topic off into a fresh session you work in directly, which reports back when it's done | `pumptrack` |
-| `grill` | Interviews you about how a feature will work and what done looks like, in rounds, each question with a recommended answer, until nothing is open, then writes its tickets | You, usually in a sidebar |
-| `handoff` | Writes a session's live state to a file before a compact or a clear, and picks it up when the session starts again | `pumptrack` |
-| `catch-up` | One table of what needs you, what's done, what's in progress, what's waiting on others and what went wrong | You |
+Start with `/pumptrack`. Most skills also work on their own, such as `/review` or `/grill`.
 
-## Install
+| Set up | Once per project |
+|:---|:---|
+| `setup-pumptrack` | Installs the skills, and records how the project checks, tracks and lands work |
+| `create-verify-skill` | Writes a skill that proves a change works in your running app. Setup offers it |
 
-pumptrack works with agents that support [Agent Skills](https://agentskills.io/); the examples use Claude Code. `review-pr` and `address-pr-feedback` need the GitHub CLI (`gh`), signed in. The deepest line nests agents four deep: `address-pr-feedback`, `build`, `review` and `find-bugs`. Where a tool caps nesting lower, as Claude Code does at three unless you raise `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`, and Codex at one by default, the skills still work, but the steps below the cap run inside their caller instead of with fresh eyes.
+| Session | The skills you work with directly |
+|:---|:---|
+| `pumptrack` | Talks and plans with you while agents do the work |
+| `sidebar` | Moves a deep topic to a session of its own, which you work in directly |
+| `grill` | Interviews you about a feature until nothing is open, then writes its tickets |
+| `handoff` | Saves what's live before a compact or a clear, and picks it up after |
+| `catch-up` | One table of where things stand, starting with what needs you |
 
-Clone this repo: `git clone https://github.com/brandonbews/pumptrack.git`. Keep the clone if you'd rather link the skills than copy them, so every change reaches every project. A skill added or removed later reaches a project when you run setup there again.
+| Changes | The agents that build and check a change |
+|:---|:---|
+| `build` | Builds a change in its own checkout, proves it, gets it reviewed and lands it |
+| `review` | Checks a change against its goal and the principles, and reports what matters |
+| `find-bugs` | Finds the real bugs in a change, and says how sure it is of each |
 
-In a project, ask an agent to read `skills/setup-pumptrack/SKILL.md` from the clone and follow it; for Claude Code, that's `claude "Read <clone>/skills/setup-pumptrack/SKILL.md and follow it"`. It asks whether the skills go in the project, committed or kept out of git, or just for you, installs them, and sets the project up, keeping what it finds in notes the project's instructions point to. It's safe to run again. Then start a session with `/pumptrack`.
+| Pull requests | Yours and other people's |
+|:---|:---|
+| `review-pr` | Reviews a GitHub PR with `review`, and posts the findings you pick in your name |
+| `address-pr-feedback` | Goes through the feedback on your PR with you, and has each accepted fix built |
+
+| Ground rules | Used by the other skills |
+|:---|:---|
+| `principles` | The coding principles builders follow and reviewers judge by |
+| `communication` | How agents report: the outcome first, then a "Needs you" list |
 
 ## Contributing
 
