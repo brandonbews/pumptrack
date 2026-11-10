@@ -27,9 +27,9 @@ rules, settings and MCP servers) and auto memory, so the results reflect
 pumptrack alone and don't depend on who runs them. They may edit files, run git
 and run the project's tests inside the throwaway project; anything else that
 would ask for permission is denied, and each case's result says how many of its
-calls were, since a denial can change what a session does. A full run uses about $10 at API prices; on a
-subscription that counts toward the plan's usage limits rather than being
-billed.
+calls were, since a denial can change what a session does. A full run uses about
+$3.40 at API prices on Opus 5.5, and more on a larger model; on a subscription
+that counts toward the plan's usage limits rather than being billed.
 
     python3 evals/delegation.py                  # every case
     python3 evals/delegation.py fix tracker      # some cases

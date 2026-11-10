@@ -19,7 +19,7 @@ Open-source agent skills for orchestrating coding agents.
 ## Checks
 
 - `python3 evals/check_delegation.py` checks the eval's own pass and fail logic against hand-made states, at no model cost. Run it after any change under `evals/`.
-- `python3 evals/delegation.py` runs the real eval through Claude Code's headless mode. It needs the `claude` command logged in and costs about $10 a run at API prices, so run it only after changing a skill it checks. One case can run alone, such as `python3 evals/delegation.py start`.
+- `python3 evals/delegation.py` runs the real eval through Claude Code's headless mode. It needs the `claude` command logged in and costs about $3.40 a run at API prices on Opus 5.5, and more on a larger model, so run it only after changing a skill it checks. One case can run alone, such as `python3 evals/delegation.py start`.
 - A change to a README diagram gets rendered with mermaid-cli (`mmdc`) to a PNG, and the picture gets looked at before the change lands.
 
 There are no other tests, no linter, no CI and no app to run; the evals do the checking a verify skill would do elsewhere.
