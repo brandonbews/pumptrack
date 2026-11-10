@@ -13,7 +13,8 @@ The sessions leave out your user-level setup (personal skills, CLAUDE.md and
 rules, settings and MCP servers) and auto memory, so the results reflect
 pumptrack alone and don't depend on who runs them. They may edit files, run git
 and run the project's tests inside the throwaway project; anything else that
-would ask for permission is denied. A full run uses about $10 at API prices; on a
+would ask for permission is denied, and each case's result says how many of its
+calls were, since a denial can change what a session does. A full run uses about $10 at API prices; on a
 subscription that counts toward the plan's usage limits rather than being
 billed.
 
@@ -35,20 +36,22 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 ITEM = "SHOP-041"  # an open item in the tracker
+FIX = "Fix the typo in the README."  # it says "wiht"
 
 # Each case starts with /pumptrack, then sends its turns. Only the last turn is
 # judged, and the flag says whether that turn must send an agent. A /clear turn
 # ends the session, after a look at what it left behind, and the turns after it
 # run in a fresh one.
 CASES = {
+    # Starting empty is no agent and no more than a glance, such as looking for a handoff.
     "start": ([], False),
-    "fix": (["Fix the typo in the README."], True),
+    "fix": ([FIX], True),
     "explore": (["Walk me through how checkout works, from the entry point to the receipt."], True),
     # Answering from what it already knows, or after one targeted search that brings
     # back little, is fine; reading the whole tracker is not.
     "tracker": (["What's still open in the tracker?"], False),
     "handoff-roundtrip": ([
-        "Fix the typo in the README.",
+        FIX,
         "I'm about to clear. Write a handoff.",
         "/clear",
         "/pumptrack",
@@ -69,6 +72,12 @@ WORK_TOOLS = {"Read", "Grep", "Glob", "Bash", "WebFetch", "WebSearch"}
 # means it did the work itself.
 MAX_OWN_CALLS = 4
 MAX_OWN_READING = 5000  # characters of tool output, outside what its agents report
+MAX_START_READING = 500  # the same, before the user has asked for anything
+
+
+def folder(workdir, name):
+    """A case's project folder, named so the session can't read the case off its working directory."""
+    return workdir / f"tiny-shop-{list(CASES).index(name) + 1}"
 
 
 def make_project(root, landing):
@@ -255,10 +264,17 @@ def run_turn(cwd, prompt, session, model, log):
     return events, session, result.get("total_cost_usd"), failure
 
 
+def denials(events):
+    """The tool calls the eval's permission settings denied, as each result lists them."""
+    return [denial for e in events if e.get("type") == "result" for denial in e.get("permission_denials") or []]
+
+
 def own_activity(events):
-    """The orchestrator's own tool calls, and what its own reading brought back.
-    A subagent's events carry the id of the call that started it."""
+    """The orchestrator's own tool calls, and what its own reading brought back,
+    which leaves out the text of a denial. A subagent's events carry the id of
+    the call that started it."""
     calls, names_by_id, reading = [], {}, ""
+    denied = {denial["tool_use_id"] for denial in denials(events)}
     for e in events:
         if e.get("parent_tool_use_id"):
             continue
@@ -268,7 +284,8 @@ def own_activity(events):
             if e.get("type") == "assistant" and block.get("type") == "tool_use":
                 calls.append((block["name"], block.get("input", {})))
                 names_by_id[block["id"]] = block["name"]
-            elif block.get("type") == "tool_result" and names_by_id.get(block.get("tool_use_id")) in WORK_TOOLS:
+            elif (block.get("type") == "tool_result" and names_by_id.get(block.get("tool_use_id")) in WORK_TOOLS
+                  and block.get("tool_use_id") not in denied):
                 content = block.get("content")
                 if isinstance(content, list):
                     content = "".join(c.get("text", "") for c in content if isinstance(c, dict))
@@ -325,22 +342,32 @@ def handoff_picked_up(root, events):
     return problems
 
 
+def beyond_the_tracker(root, commit):
+    """The files in the checkout that differ from a commit, other than the tracker."""
+    changed = set(git(root, "diff", "--name-only", commit).split()) | set(
+        git(root, "ls-files", "--others", "--directory", "--no-empty-directory", "--exclude-standard").split())
+    return sorted(changed - {"TRACKER.md"})
+
+
 def only_the_tracker(root):
     """Nothing in the checkout differs from the start but the tracker, committed or not."""
-    base = git(root, "rev-list", "--max-parents=0", "HEAD")
-    changed = set(git(root, "diff", "--name-only", base).split()) | set(
-        git(root, "ls-files", "--others", "--directory", "--no-empty-directory", "--exclude-standard").split())
-    return [f"changed {', '.join(sorted(stray))}"] if (stray := changed - {"TRACKER.md"}) else []
+    stray = beyond_the_tracker(root, git(root, "rev-list", "--max-parents=0", "HEAD"))
+    return [f"changed {', '.join(stray)}"] if stray else []
 
 
 def checkout_left_alone(root):
     """The user's checkout stays theirs in every case: it never leaves main, even
     for a while, and no work is committed in it beyond a line in the tracker.
     Fast-forwarding it to a commit made elsewhere is fine. Git's own record of
-    what happened in this checkout says so."""
+    what happened in this checkout says so. Nothing is left in it either: no
+    stash, and no uncommitted change but the tracker's."""
     problems = []
     if git(root, "branch", "--show-current") != "main":
         problems.append("left the main checkout off main")
+    if git(root, "stash", "list"):
+        problems.append("left a stash behind")
+    if stray := beyond_the_tracker(root, "HEAD"):
+        problems.append(f"left uncommitted changes to {', '.join(stray)} in the main checkout")
     for entry in git(root, "reflog", "--format=%H %gs", "HEAD").splitlines():
         commit, _, action = entry.partition(" ")
         if action.startswith("checkout: moving from main to"):
@@ -373,14 +400,27 @@ def tracker_marked(root, events):
     return problems
 
 
-CHECKS = {"handoff-roundtrip": handoff_picked_up, "build-branch": landed_on_branch, "tracker-edit": tracker_marked}
+def started_empty(root, events):
+    """With no handoff waiting, a session starts empty and asks what's next: it
+    sends no agent, and reads no more than a glance."""
+    calls, reading = own_activity(events)
+    problems = []
+    if any(n in AGENT_TOOLS for n, _ in calls):
+        problems.append("sent an agent before it was asked for anything")
+    if len(reading) > MAX_START_READING:
+        problems.append(f"read {len(reading):,} characters before it was asked for anything")
+    return problems
+
+
+CHECKS = {"start": started_empty, "handoff-roundtrip": handoff_picked_up, "build-branch": landed_on_branch,
+          "tracker-edit": tracker_marked}
 
 
 def run_case(name, turns, must_delegate, model, workdir):
-    root = workdir / name
+    root = folder(workdir, name)
     root.mkdir()
     make_project(root, LANDING.get(name, "Land work as a commit on main."))
-    session, cost, spent, problems = None, 0, 0, []
+    session, cost, spent, problems, denied = None, 0, 0, [], set()
     for i, prompt in enumerate(["/pumptrack"] + turns):
         if prompt == "/clear":
             problems += handoff_written(root, events)
@@ -388,6 +428,7 @@ def run_case(name, turns, must_delegate, model, workdir):
             continue
         events, session, session_cost, failure = run_turn(root, prompt, session, model, workdir / f"{name}-{i}.jsonl")
         cost = session_cost or cost  # a running total for the session, not this turn's share
+        denied |= {denial["tool_use_id"] for denial in denials(events)}
         if failure:
             problems.append(f"turn {i} {' '.join(failure.split())[:200]}")
             break
@@ -404,12 +445,14 @@ def run_case(name, turns, must_delegate, model, workdir):
         problems.append(f"made {own_calls} calls of its own work")
     if len(reading) > MAX_OWN_READING:
         problems.append(f"read {len(reading):,} characters itself")
+    if FIX in turns and not failure and "wiht" in git(root, "show", "main:README.md"):
+        problems.append("the README typo is still on main")
     if not failure:
         problems += checkout_left_alone(root)
     if name in CHECKS and not failure:
         problems += CHECKS[name](root, events)
     summary = "; ".join(problems) or ("sent an agent" if must_delegate else "stayed light")
-    return name, not problems, summary, [describe(n, a, root) for n, a in calls], len(reading), spent + cost
+    return name, not problems, summary, [describe(n, a, root) for n, a in calls], len(reading), spent + cost, len(denied)
 
 
 def main():
@@ -427,16 +470,17 @@ def main():
         try:
             return run_case(name, *CASES[name], args.model, workdir)
         except Exception as e:
-            return name, False, f"raised {type(e).__name__}: {e}", [], 0, 0
+            return name, False, f"raised {type(e).__name__}: {e}", [], 0, 0, 0
 
     with ThreadPoolExecutor() as pool:
         results = list(pool.map(run, names))
 
     total = 0
-    for name, passed, summary, calls, reading, cost in results:
+    for name, passed, summary, calls, reading, cost, denied in results:
         total += cost
         print(f"{'PASS' if passed else 'FAIL'}  {name}: {summary}")
         print(f"      its own calls ({reading:,} characters read): {' → '.join(calls) or 'none'}")
+        print(f"      in {folder(workdir, name).name}, with {denied} tool calls denied by the eval's permission settings")
     print(f"\nAPI-price equivalent: ${total:.2f}. Projects and session logs: {workdir}")
     sys.exit(0 if all(r[1] for r in results) else 1)
 

@@ -41,13 +41,23 @@ def commit(root, message):
     subprocess.run(["git", "-C", str(root), "-c", "user.name=e", "-c", "user.email=e@e", "commit", "-qam", message], check=True)
 
 
-def tool_events(calls, result_text=""):
-    """Canned stream-json events: own tool calls with results, then a result."""
+def land_fix(root):
+    """Lands the README fix as a builder does: committed in a checkout of its own, which is then removed, and main fast-forwarded to it."""
+    wt = root / ".claude" / "worktrees" / "typo"
+    subprocess.run(["git", "-C", str(root), "worktree", "add", "-q", str(wt), "-b", "typo"], check=True)
+    (wt / "README.md").write_text((wt / "README.md").read_text().replace("wiht", "with"))
+    commit(wt, "Fix the typo")
+    subprocess.run(["git", "-C", str(root), "worktree", "remove", str(wt)], check=True)
+    subprocess.run(["git", "-C", str(root), "merge", "-q", "--ff-only", "typo"], check=True)
+
+
+def tool_events(calls, result_text="", denied=()):
+    """Canned stream-json events: own tool calls with results, then a result that lists the calls denied."""
     events = []
     for i, (name, args, output) in enumerate(calls):
         events.append({"type": "assistant", "message": {"content": [{"type": "tool_use", "id": f"t{i}", "name": name, "input": args}]}})
         events.append({"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": f"t{i}", "content": output}]}})
-    events.append({"type": "result", "result": result_text})
+    events.append({"type": "result", "result": result_text, "permission_denials": [{"tool_use_id": i} for i in denied]})
     return events
 
 
@@ -109,13 +119,17 @@ expect("checkout: left on another branch fails", d.checkout_left_alone(root), ["
 subprocess.run(["git", "-C", str(root), "checkout", "-q", "main"], check=True)
 expect("checkout: switched away and back fails", d.checkout_left_alone(root), ["switched the main checkout to another branch"])
 root = project("fast-forward")
-wt = root / ".claude" / "worktrees" / "typo"
-subprocess.run(["git", "-C", str(root), "worktree", "add", "-q", str(wt), "-b", "typo"], check=True)
-(wt / "README.md").write_text("# Tiny Shop\n")
-commit(wt, "Fix the typo")
-subprocess.run(["git", "-C", str(root), "worktree", "remove", str(wt)], check=True)
-subprocess.run(["git", "-C", str(root), "merge", "-q", "--ff-only", "typo"], check=True)
+land_fix(root)
 expect("checkout: fast-forwarding main to a commit made elsewhere passes", d.checkout_left_alone(root), [])
+with open(root / "TRACKER.md", "a") as f:
+    f.write("\n## SHOP-081: Chore in receipts #81\n\nStatus: open\n")
+expect("checkout: an uncommitted tracker line passes", d.checkout_left_alone(root), [])
+subprocess.run(["git", "-C", str(root), "-c", "user.name=e", "-c", "user.email=e@e", "stash", "-q"], check=True)
+expect("checkout: the user's tracker line stashed away fails", d.checkout_left_alone(root), ["left a stash behind"])
+subprocess.run(["git", "-C", str(root), "stash", "drop", "-q"], check=True)
+(root / "README.md").write_text("edited here, never committed\n")
+(root / "notes.md").write_text("new\n")
+expect("checkout: uncommitted work left behind fails", d.checkout_left_alone(root), ["left uncommitted changes to README.md, notes.md in the main checkout"])
 root = project("built-in-place")
 (root / "src" / "cart.py").write_text((root / "src" / "cart.py").read_text() + "# built here\n")
 commit(root, "Build in the main checkout")
@@ -154,12 +168,23 @@ expect("pickup: outcome then Needs you on the next line passes", d.handoff_picke
 expect("pickup: empty message fails", d.handoff_picked_up(root, tool_events(read_then_rm, "")), ["its first message doesn't start with a one-line outcome", 'its first message has no "Needs you" list'])
 expect("pickup: first result judged, not a later one", d.handoff_picked_up(root, tool_events(read_then_rm, good) + [{"type": "result", "result": "no shape"}]), [])
 
+# started_empty
+look = ("Bash", {"command": "ls .pumptrack"}, "ls: .pumptrack: No such file or directory")
+expect("start: a look for a handoff passes", d.started_empty(root, tool_events([look])), [])
+expect("start: sending an agent fails", d.started_empty(root, tool_events([look, ("Agent", {"description": "Read the tracker"}, "launched")])), ["sent an agent before it was asked for anything"])
+expect("start: more than a glance fails", d.started_empty(root, tool_events([look, ("Bash", {"command": "head -20 TRACKER.md"}, "x" * 600)])), ["read 641 characters before it was asked for anything"])
+refused = ("Bash", {"command": "ls .pumptrack && cat .pumptrack/handoff.md"}, "Permission for this tool use was denied. " + "x" * 800)
+expect("start: a denial's own text isn't reading", d.started_empty(root, tool_events([look, refused], denied=["t1"])), [])
+
 # run_case with a stand-in for run_turn: the /clear flow, the edit exception and the call budget.
 log = []
 
 
 def fake_turn(cwd, prompt, session, model, logfile):
     log.append((prompt, session))
+    if prompt == d.FIX:
+        land_fix(cwd)
+        return tool_events([("Agent", {"description": "Fix the typo"}, "launched")], "Landed.", denied=["a", "b"]), "s1", 0.3, None
     if prompt == "I'm about to clear. Write a handoff.":
         (cwd / ".pumptrack").mkdir(exist_ok=True)
         (cwd / ".pumptrack" / "handoff.md").write_text(body + "Delete this file once you've picked it up.\n")
@@ -173,7 +198,7 @@ def fake_turn(cwd, prompt, session, model, logfile):
                             ("Read", {"file_path": str(cwd / "README.md")}, "readme"),
                             ("Bash", {"command": "git log --oneline"}, "abc"),
                             ("Read", {"file_path": str(cwd / "TRACKER.md"), "limit": 20}, "x" * 400),
-                            ("Bash", {"command": "rm .pumptrack/handoff.md"}, "")], good), "s2", 0.9, None
+                            ("Bash", {"command": "rm .pumptrack/handoff.md"}, "")], good, denied=["b", "c"]), "s2", 0.9, None
     if prompt.startswith("Mark "):
         text = (cwd / "TRACKER.md").read_text()
         head, _, rest = text.partition(f"## {d.ITEM}:")
@@ -185,22 +210,29 @@ def fake_turn(cwd, prompt, session, model, logfile):
 real_run_turn = d.run_turn
 d.run_turn = fake_turn
 work2 = Path(tempfile.mkdtemp(prefix="check-delegation-run-"))
-name, passed, summary, calls, reading, cost = d.run_case("handoff-roundtrip", *d.CASES["handoff-roundtrip"], None, work2)
+name, passed, summary, calls, reading, cost, denied = d.run_case("handoff-roundtrip", *d.CASES["handoff-roundtrip"], None, work2)
 expect("run: handoff roundtrip passes end to end", (passed, summary), (True, "stayed light"))
+expect("run: denied calls are counted once each, across turns", denied, 3)
+shop = d.folder(work2, "handoff-roundtrip")
+expect("run: the project sits in the case's folder", [p for p in work2.iterdir() if p.is_dir()], [shop])
+expect("run: whose path doesn't name the case", "handoff" in str(shop), False)
+expect("run: each case gets a folder of its own", len({d.folder(work2, case) for case in d.CASES}), len(d.CASES))
 expect("run: both sessions' costs count", round(cost, 2), 1.4)
 expect("run: the fresh session had no session id", [s for p, s in log if p == "/pumptrack"], [None, None])
 expect("run: /clear was not sent to claude", any(p == "/clear" for p, s in log), False)
 expect("run: handoff calls left out of the count, four others counted", "calls of its own work" in summary, False)
-expect("run: a copy of the handoff sits beside the logs", (work2 / "handoff-roundtrip-handoff.md").exists(), True)
+expect("run: a copy of the handoff sits beside the logs", (work2 / f"{shop.name}-handoff.md").exists(), True)
 log.clear()
-name, passed, summary, calls, reading, cost = d.run_case("tracker-edit", *d.CASES["tracker-edit"], None, work2)
+name, passed, summary, *_ = d.run_case("tracker-edit", *d.CASES["tracker-edit"], None, work2)
 expect("run: tracker edit by itself passes", (passed, summary), (True, "stayed light"))
-name, passed, summary, calls, reading, cost = d.run_case("fix", *d.CASES["fix"], None, work2)
-expect("run: other cases unchanged (fix with no agent fails)", (passed, summary), (False, "never sent an agent"))
+name, passed, summary, *_ = d.run_case("fix", *d.CASES["fix"], None, work2)
+expect("run: a fix sent to an agent and landed on main passes", (passed, summary), (True, "sent an agent"))
+name, passed, summary, *_ = d.run_case("start", *d.CASES["start"], None, work2)
+expect("run: start with nothing done passes", (passed, summary), (True, "stayed light"))
 log.clear()
-name, passed, summary, calls, reading, cost = d.run_case("build-branch", *d.CASES["build-branch"], None, work2)
+name, passed, summary, *_ = d.run_case("build-branch", *d.CASES["build-branch"], None, work2)
 expect("run: build-branch with nothing landed", summary, "never sent an agent; setup: no branch was committed, so there was nothing to check")
-expect("run: build-branch project says branch", "branch off main" in (work2 / "build-branch" / "CLAUDE.md").read_text(), True)
+expect("run: build-branch project says branch", "branch off main" in (d.folder(work2, "build-branch") / "CLAUDE.md").read_text(), True)
 
 # Every session allows git and the project's test command, nothing else.
 captured = {}
@@ -212,7 +244,7 @@ class Done:
 
 real_subprocess_run = d.subprocess.run
 d.subprocess.run = lambda cmd, **kw: (captured.setdefault("cmd", cmd), Done)[1]
-real_run_turn(work2 / "tracker-edit", "/pumptrack", None, None, work2 / "x.jsonl")
+real_run_turn(d.folder(work2, "tracker-edit"), "/pumptrack", None, None, work2 / "x.jsonl")
 d.subprocess.run = real_subprocess_run
 cmd = captured["cmd"]
 allowed = cmd[cmd.index("--allowedTools") + 1:cmd.index("--permission-prompts")]
@@ -228,6 +260,13 @@ d.run_turn = editing("x")
 name, passed, summary, *_ = d.run_case("tracker", *d.CASES["tracker"], None, work2)
 expect("run: an own edit still fails elsewhere", summary, "edited files itself")
 work3 = Path(tempfile.mkdtemp(prefix="check-delegation-edits-"))
+sent = lambda cwd, prompt, session, model, logfile: (tool_events([("Agent", {"description": "Do it"}, "launched")], "ok"), "s", 0.1, None)
+d.run_turn = sent
+name, passed, summary, *_ = d.run_case("fix", *d.CASES["fix"], None, work3)
+expect("run: a fix sent to an agent that never landed fails", summary, "the README typo is still on main")
+name, passed, summary, *_ = d.run_case("start", *d.CASES["start"], None, work3)
+expect("run: start that sends an agent fails", summary, "sent an agent before it was asked for anything")
+shutil.rmtree(d.folder(work3, "fix"))
 d.run_turn = editing("TRACKER.md")
 name, passed, summary, *_ = d.run_case("fix", *d.CASES["fix"], None, work3)
 expect("run: any case may edit the tracker itself", "edited files itself" in summary, False)
