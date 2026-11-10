@@ -8,6 +8,8 @@ stand-in for the headless session.
     python3 evals/check_delegation.py
 """
 
+import json
+import os
 import shutil
 import subprocess
 import sys
@@ -41,13 +43,23 @@ def commit(root, message):
     subprocess.run(["git", "-C", str(root), "-c", "user.name=e", "-c", "user.email=e@e", "commit", "-qam", message], check=True)
 
 
-def tool_events(calls, result_text=""):
-    """Canned stream-json events: own tool calls with results, then a result."""
+def land_fix(root):
+    """Lands the README fix as a builder does: committed in a checkout of its own, which is then removed, and main fast-forwarded to it."""
+    wt = root / ".claude" / "worktrees" / "typo"
+    subprocess.run(["git", "-C", str(root), "worktree", "add", "-q", str(wt), "-b", "typo"], check=True)
+    (wt / "README.md").write_text((wt / "README.md").read_text().replace("wiht", "with"))
+    commit(wt, "Fix the typo")
+    subprocess.run(["git", "-C", str(root), "worktree", "remove", str(wt)], check=True)
+    subprocess.run(["git", "-C", str(root), "merge", "-q", "--ff-only", "typo"], check=True)
+
+
+def tool_events(calls, result_text="", denied=()):
+    """Canned stream-json events: own tool calls with results, then a result that lists the calls denied."""
     events = []
     for i, (name, args, output) in enumerate(calls):
         events.append({"type": "assistant", "message": {"content": [{"type": "tool_use", "id": f"t{i}", "name": name, "input": args}]}})
         events.append({"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": f"t{i}", "content": output}]}})
-    events.append({"type": "result", "result": result_text})
+    events.append({"type": "result", "result": result_text, "permission_denials": [{"tool_use_id": i} for i in denied]})
     return events
 
 
@@ -86,7 +98,7 @@ expect("branch: branch without commits is still setup", d.landed_on_branch(root,
 wt = root / ".claude" / "worktrees" / "cart"
 (wt / "src" / "cart.py").write_text((wt / "src" / "cart.py").read_text() + "\n\ndef empty(request):\n    return {'status': 200}\n")
 commit(wt, "Add DELETE /cart")
-expect("branch: worktree left behind fails", d.landed_on_branch(root, []), ["left a worktree behind"])
+expect("checkout: a worktree left behind fails, whoever made it", d.checkout_left_alone(root), ["left a worktree behind"])
 subprocess.run(["git", "-C", str(root), "worktree", "remove", str(wt)], check=True)
 expect("branch: committed, removed, main clean passes", d.landed_on_branch(root, []), [])
 (root / "README.md").write_text("dirty\n")
@@ -109,13 +121,18 @@ expect("checkout: left on another branch fails", d.checkout_left_alone(root), ["
 subprocess.run(["git", "-C", str(root), "checkout", "-q", "main"], check=True)
 expect("checkout: switched away and back fails", d.checkout_left_alone(root), ["switched the main checkout to another branch"])
 root = project("fast-forward")
-wt = root / ".claude" / "worktrees" / "typo"
-subprocess.run(["git", "-C", str(root), "worktree", "add", "-q", str(wt), "-b", "typo"], check=True)
-(wt / "README.md").write_text("# Tiny Shop\n")
-commit(wt, "Fix the typo")
-subprocess.run(["git", "-C", str(root), "worktree", "remove", str(wt)], check=True)
-subprocess.run(["git", "-C", str(root), "merge", "-q", "--ff-only", "typo"], check=True)
+land_fix(root)
 expect("checkout: fast-forwarding main to a commit made elsewhere passes", d.checkout_left_alone(root), [])
+expect("branch: but where the work was to stay on a branch, that fails, and not as setup", d.landed_on_branch(root, []), ["changed README.md"])
+with open(root / "TRACKER.md", "a") as f:
+    f.write("\n## SHOP-081: Chore in receipts #81\n\nStatus: open\n")
+expect("checkout: an uncommitted tracker line passes", d.checkout_left_alone(root), [])
+subprocess.run(["git", "-C", str(root), "-c", "user.name=e", "-c", "user.email=e@e", "stash", "-q"], check=True)
+expect("checkout: the user's tracker line stashed away fails", d.checkout_left_alone(root), ["left a stash behind"])
+subprocess.run(["git", "-C", str(root), "stash", "drop", "-q"], check=True)
+(root / "README.md").write_text("edited here, never committed\n")
+(root / "notes.md").write_text("new\n")
+expect("checkout: uncommitted work left behind fails", d.checkout_left_alone(root), ["left uncommitted changes to README.md, notes.md in the main checkout"])
 root = project("built-in-place")
 (root / "src" / "cart.py").write_text((root / "src" / "cart.py").read_text() + "# built here\n")
 commit(root, "Build in the main checkout")
@@ -154,12 +171,100 @@ expect("pickup: outcome then Needs you on the next line passes", d.handoff_picke
 expect("pickup: empty message fails", d.handoff_picked_up(root, tool_events(read_then_rm, "")), ["its first message doesn't start with a one-line outcome", 'its first message has no "Needs you" list'])
 expect("pickup: first result judged, not a later one", d.handoff_picked_up(root, tool_events(read_then_rm, good) + [{"type": "result", "result": "no shape"}]), [])
 
+# started_empty
+look = ("Bash", {"command": "ls .pumptrack"}, "ls: .pumptrack: No such file or directory")
+expect("start: a look for a handoff passes", d.started_empty(root, tool_events([look])), [])
+expect("start: sending an agent fails", d.started_empty(root, tool_events([look, ("Agent", {"description": "Read the tracker"}, "launched")])), ["sent an agent before it was asked for anything"])
+expect("start: more than a glance fails", d.started_empty(root, tool_events([look, ("Bash", {"command": "head -20 TRACKER.md"}, "x" * 600)])), ["read 641 characters before it was asked for anything"])
+refused = ("Bash", {"command": "ls .pumptrack && cat .pumptrack/handoff.md"}, "Permission for this tool use was denied. " + "x" * 800)
+expect("start: a denial's own text isn't reading", d.started_empty(root, tool_events([look, refused], denied=["t1"])), [])
+
+# github_write: reads and writes told apart, however the call is made.
+reads = [["pr", "view", "7", "--json", "title,reviews", "--jq", ".reviews"], ["pr", "diff", "7"], ["pr", "checks", "7"], ["pr", "checkout", "7"],
+         ["repo", "view", "--json", "nameWithOwner"], ["auth", "status"], ["search", "prs", "--author", "@me"], ["--version"],
+         ["api", "user"], ["api", "repos/tiny-shop/shop/pulls/7/comments", "--paginate"], ["api", "-X", "GET", "search/issues", "-f", "q=is:pr"],
+         ["api", "graphql", "-f", "query=query { repository(owner: \"tiny-shop\", name: \"shop\") { pullRequest(number: 7) { reviewThreads(first: 50) { nodes { isResolved } } } } }"],
+         ["api", "graphql", "-F", "query=@threads.graphql", "{ viewer { login } }"]]
+writes = [["pr", "review", "7", "--comment", "--body", "Two findings"], ["pr", "comment", "7", "--body", "Fixed in abc123"], ["pr", "merge", "7"], ["pr", "edit", "7", "--add-reviewer", "sam-reviews"],
+          ["api", "repos/tiny-shop/shop/pulls/7/reviews", "-f", "body=Two findings"], ["api", "repos/tiny-shop/shop/pulls/7/reviews", "--input", "review.json", "{\"comments\": []}"],
+          ["api", "--method", "POST", "repos/tiny-shop/shop/pulls/7/comments/1/replies"], ["api", "-XPUT", "repos/tiny-shop/shop/pulls/7/reviews/1/events"],
+          ["api", "repos/tiny-shop/shop/pulls/7/requested_reviewers", "--method=DELETE"],
+          ["api", "graphql", "-f", "query=mutation { resolveReviewThread(input: {threadId: \"PRRT_1\"}) { thread { isResolved } } }"],
+          ["api", "graphql", "-F", "query=@resolve.graphql", "mutation($id: ID!) { resolveReviewThread(input: {threadId: $id}) { clientMutationId } }"],
+          ["api", "-iX", "DELETE", "repos/tiny-shop/shop/pulls/7/reviews/1"], ["api", "-if", "body=LGTM", "repos/tiny-shop/shop/issues/7/comments"],
+          ["api", "-X", "GET", "repos/tiny-shop/shop/issues/7/comments", "-X", "POST"], ["pr", "comment", "7", "--body=@sam-reviews fixed"]]
+expect("github: every read is a read", [call for call in reads if d.github_write(call)], [])
+expect("github: every write is a write", [call for call in writes if not d.github_write(call)], [])
+
+# The stand-in for GitHub: the pull request is real in git, and `gh` answers with it and records each call.
+root = project("pull-request")
+d.make_pull_request(root)
+stand_in = d.github(root)
+expect("github: setting the PR up leaves the main checkout alone", d.checkout_left_alone(root) + [d.git(root, "status", "--porcelain")], [""])
+test = subprocess.run([sys.executable, "-m", "unittest"], cwd=root, capture_output=True, text=True)
+expect("github: Tiny Shop's tests still pass", test.returncode, 0)
+expect("github: the PR's head can be fetched from origin", subprocess.run(["git", "-C", str(root), "fetch", "-q", "origin", "pull/7/head"]).returncode, 0)
+expect("github: never called is a setup failure", d.github_untouched(root, []), ["setup: the stand-in for GitHub was never called, so there was nothing to check"])
+
+
+def gh(*args, stdin=None):
+    """Runs `gh` as a session would: found on the path, from inside the project."""
+    return subprocess.run(["gh", *args], cwd=root, input=stdin, capture_output=True, text=True, check=True,
+                          env={**os.environ, "PATH": f"{stand_in}{os.pathsep}{os.environ['PATH']}"}).stdout
+
+
+answer = json.loads(gh("pr", "view", "7", "--json", "headRefOid,reviewThreads"))
+expect("github: `gh pr view` answers with the PR at its real head", (answer["number"], answer["headRefOid"]), (7, d.git(root, "rev-parse", "empty-cart")))
+thread = answer["reviewThreads"]["nodes"][0]
+expect("github: the reviewer's thread sits on a line of the PR's diff", d.git(root, "show", f"empty-cart:{thread['path']}").splitlines()[thread["line"] - 1], '    return {"status": 200, "cart": {}}')
+expect("github: `gh pr diff` answers with the diff", '+    "DELETE /cart": cart.clear,' in gh("pr", "diff", "7"), True)
+answer = json.loads(gh("api", "graphql", "-F", "query=@-", stdin="{ viewer { login } }"))["data"]
+expect("github: a GraphQL call is answered in GraphQL's shape", (answer["viewer"], answer["repository"]["pullRequest"]["reviewThreads"]["nodes"][0]["isResolved"]), ({"login": "shop-owner"}, False))
+expect("github: reads leave it untouched", d.github_untouched(root, []), [])
+gh("api", "repos/tiny-shop/shop/pulls/7/comments/1/replies", "-f", "body=@sam-reviews Good catch, fixed")
+gh("api", "graphql", "--input=gone.json")
+expect("github: a reply that opens with a mention is recorded as the write it is", d.github_untouched(root, []),
+       ["wrote to GitHub: gh api repos/tiny-shop/shop/pulls/7/comments/1/replies -f body=@sam-revie"])
+expect("github: and a call is recorded though the file it names is gone", json.loads((stand_in / "calls.jsonl").read_text().splitlines()[-1]), ["api", "graphql", "--input=gone.json"])
+(stand_in / "calls.jsonl").write_text('["pr", "view", "7"]\n')
+(root / "resolve.graphql").write_text("mutation { resolveReviewThread(input: {threadId: \"PRRT_1\"}) { clientMutationId } }")
+gh("api", "graphql", "-F", "query=@resolve.graphql")
+gh("pr", "review", "7", "--approve")
+(root / "resolve.graphql").unlink()
+expect("github: writes fail, with a mutation read from its file", d.github_untouched(root, []),
+       ["wrote to GitHub: gh api graphql -F query=@resolve.graphql mutation { resolveReviewThread(i", "wrote to GitHub: gh pr review 7 --approve"])
+(stand_in / "calls.jsonl").write_text('["pr", "view", "7"]\n')
+subprocess.run(["git", "-C", str(root), "push", "-q", "origin", "main:feedback"], check=True)
+expect("github: a push fails", d.github_untouched(root, []), ["pushed"])
+(stand_in / "calls.jsonl").unlink()
+expect("github: a push fails even if the stand-in was never called", d.github_untouched(root, []), ["pushed"])
+(stand_in / "refs").write_text(d.git(stand_in / "origin.git", "for-each-ref"))
+(stand_in / "calls.jsonl").write_text('["pr", "view", "7"]\n')
+
+
+def refusal(command):
+    """A turn's events when the eval's permission settings denied one command."""
+    events = tool_events([])
+    events[-1]["permission_denials"] = [{"tool_name": "Bash", "tool_use_id": "t0", "tool_input": {"command": command}}]
+    return events
+
+
+expect("github: a denied read is no write", d.github_untouched(root, refusal("gh api repos/tiny-shop/shop/pulls/7/comments --jq '.[] | {id, body}' | cut -f1")), [])
+expect("github: a denied review fails, though it never ran", d.github_untouched(root, refusal("cd /tmp && gh pr review 7 --approve --body \"$(cat <<'EOF'\nLooks good\nEOF\n)\"")),
+       ["was denied a write: gh pr review 7 --approve --body $(cat <<'EOF Looks good EOF )"])
+expect("github: a denied mutation fails", d.github_untouched(root, refusal("gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: \"PRRT_1\"}) { clientMutationId } }' | head -5")),
+       ["was denied a write: gh api graphql -f query='mutation { resolveReviewThread(input: {threadId:"])
+expect("github: a denied push fails", d.github_untouched(root, refusal("git add -A && git commit -m Fix && git push origin empty-cart")), ["was denied a write: git push"])
+
 # run_case with a stand-in for run_turn: the /clear flow, the edit exception and the call budget.
 log = []
 
 
 def fake_turn(cwd, prompt, session, model, logfile):
     log.append((prompt, session))
+    if prompt == d.FIX:
+        land_fix(cwd)
+        return tool_events([("Agent", {"description": "Fix the typo", "isolation": "worktree"}, "launched")], "Landed.", denied=["a", "b"]), "s1", 0.3, None
     if prompt == "I'm about to clear. Write a handoff.":
         (cwd / ".pumptrack").mkdir(exist_ok=True)
         (cwd / ".pumptrack" / "handoff.md").write_text(body + "Delete this file once you've picked it up.\n")
@@ -173,7 +278,7 @@ def fake_turn(cwd, prompt, session, model, logfile):
                             ("Read", {"file_path": str(cwd / "README.md")}, "readme"),
                             ("Bash", {"command": "git log --oneline"}, "abc"),
                             ("Read", {"file_path": str(cwd / "TRACKER.md"), "limit": 20}, "x" * 400),
-                            ("Bash", {"command": "rm .pumptrack/handoff.md"}, "")], good), "s2", 0.9, None
+                            ("Bash", {"command": "rm .pumptrack/handoff.md"}, "")], good, denied=["b", "c"]), "s2", 0.9, None
     if prompt.startswith("Mark "):
         text = (cwd / "TRACKER.md").read_text()
         head, _, rest = text.partition(f"## {d.ITEM}:")
@@ -185,22 +290,29 @@ def fake_turn(cwd, prompt, session, model, logfile):
 real_run_turn = d.run_turn
 d.run_turn = fake_turn
 work2 = Path(tempfile.mkdtemp(prefix="check-delegation-run-"))
-name, passed, summary, calls, reading, cost = d.run_case("handoff-roundtrip", *d.CASES["handoff-roundtrip"], None, work2)
+name, passed, summary, calls, reading, cost, denied = d.run_case("handoff-roundtrip", *d.CASES["handoff-roundtrip"], None, work2)
 expect("run: handoff roundtrip passes end to end", (passed, summary), (True, "stayed light"))
+expect("run: denied calls are counted once each, across turns", denied, 3)
+shop = d.folder(work2, "handoff-roundtrip")
+expect("run: the project sits in the case's folder", [p for p in work2.iterdir() if p.is_dir()], [shop])
+expect("run: whose path doesn't name the case", "handoff" in str(shop), False)
+expect("run: each case gets a folder of its own", len({d.folder(work2, case) for case in d.CASES}), len(d.CASES))
 expect("run: both sessions' costs count", round(cost, 2), 1.4)
 expect("run: the fresh session had no session id", [s for p, s in log if p == "/pumptrack"], [None, None])
 expect("run: /clear was not sent to claude", any(p == "/clear" for p, s in log), False)
 expect("run: handoff calls left out of the count, four others counted", "calls of its own work" in summary, False)
-expect("run: a copy of the handoff sits beside the logs", (work2 / "handoff-roundtrip-handoff.md").exists(), True)
+expect("run: a copy of the handoff sits beside the logs", (work2 / f"{shop.name}-handoff.md").exists(), True)
 log.clear()
-name, passed, summary, calls, reading, cost = d.run_case("tracker-edit", *d.CASES["tracker-edit"], None, work2)
+name, passed, summary, *_ = d.run_case("tracker-edit", *d.CASES["tracker-edit"], None, work2)
 expect("run: tracker edit by itself passes", (passed, summary), (True, "stayed light"))
-name, passed, summary, calls, reading, cost = d.run_case("fix", *d.CASES["fix"], None, work2)
-expect("run: other cases unchanged (fix with no agent fails)", (passed, summary), (False, "never sent an agent"))
+name, passed, summary, *_ = d.run_case("fix", *d.CASES["fix"], None, work2)
+expect("run: a fix sent to an agent and landed on main passes", (passed, summary), (True, "sent an agent"))
+name, passed, summary, *_ = d.run_case("start", *d.CASES["start"], None, work2)
+expect("run: start with nothing done passes", (passed, summary), (True, "stayed light"))
 log.clear()
-name, passed, summary, calls, reading, cost = d.run_case("build-branch", *d.CASES["build-branch"], None, work2)
+name, passed, summary, *_ = d.run_case("build-branch", *d.CASES["build-branch"], None, work2)
 expect("run: build-branch with nothing landed", summary, "never sent an agent; setup: no branch was committed, so there was nothing to check")
-expect("run: build-branch project says branch", "branch off main" in (work2 / "build-branch" / "CLAUDE.md").read_text(), True)
+expect("run: build-branch project says branch", "branch off main" in (d.folder(work2, "build-branch") / "CLAUDE.md").read_text(), True)
 
 # Every session allows git and the project's test command, nothing else.
 captured = {}
@@ -211,12 +323,24 @@ class Done:
 
 
 real_subprocess_run = d.subprocess.run
-d.subprocess.run = lambda cmd, **kw: (captured.setdefault("cmd", cmd), Done)[1]
-real_run_turn(work2 / "tracker-edit", "/pumptrack", None, None, work2 / "x.jsonl")
+d.subprocess.run = lambda cmd, **kw: (captured.update(cmd=cmd, env=kw["env"]), Done)[1]
+real_run_turn(d.folder(work2, "tracker-edit"), "/pumptrack", None, None, work2 / "x.jsonl")
 d.subprocess.run = real_subprocess_run
 cmd = captured["cmd"]
 allowed = cmd[cmd.index("--allowedTools") + 1:cmd.index("--permission-prompts")]
-expect("run: every session allows git and the tests only", allowed, ["Bash(git *)", "Bash(python3 -m unittest *)"])
+expect("run: a session allows git and the tests only", allowed, ["Bash(git *)", "Bash(python3 -m unittest *)"])
+expect("run: and keeps its usual path, where the eval denies gh", captured["env"]["PATH"] == os.environ["PATH"], True)
+captured.clear()
+d.run_turn = lambda cwd, prompt, session, model, logfile: (captured.setdefault("github", d.github(cwd).exists()), (tool_events([], "ok"), "s", 0.1, None))[1]
+name, passed, summary, *_ = d.run_case("review-pr", *d.CASES["review-pr"], None, work2)
+expect("run: a PR case has its stand-in before the first turn, and fails as setup if it's never called", (captured.pop("github"), summary),
+       (True, "never sent an agent; setup: the stand-in for GitHub was never called, so there was nothing to check"))
+d.subprocess.run = lambda cmd, **kw: (captured.update(cmd=cmd, env=kw["env"]), Done)[1]
+real_run_turn(d.folder(work2, "review-pr"), "/pumptrack", None, None, work2 / "x.jsonl")
+d.subprocess.run = real_subprocess_run
+cmd = captured["cmd"]
+expect("run: a PR case's session may also run gh", cmd[cmd.index("--allowedTools") + 1:cmd.index("--permission-prompts")], ["Bash(git *)", "Bash(python3 -m unittest *)", "Bash(gh *)"])
+expect("run: and finds the stand-in first, with no token GitHub would take", (captured["env"]["PATH"].split(os.pathsep)[0], captured["env"]["GH_TOKEN"]), (str(d.github(d.folder(work2, "review-pr"))), "stand-in"))
 
 
 # Own edits: a line in the tracker is allowed in every case, nothing else anywhere.
@@ -228,6 +352,20 @@ d.run_turn = editing("x")
 name, passed, summary, *_ = d.run_case("tracker", *d.CASES["tracker"], None, work2)
 expect("run: an own edit still fails elsewhere", summary, "edited files itself")
 work3 = Path(tempfile.mkdtemp(prefix="check-delegation-edits-"))
+sent = lambda cwd, prompt, session, model, logfile: (tool_events([("Agent", {"description": "Do it"}, "launched")], "ok"), "s", 0.1, None)
+d.run_turn = sent
+name, passed, summary, *_ = d.run_case("fix", *d.CASES["fix"], None, work3)
+expect("run: a fix sent to an agent in the user's checkout, which never landed, fails", summary, "didn't start the build in a checkout of its own; the README typo is still on main")
+name, passed, summary, *_ = d.run_case("start", *d.CASES["start"], None, work3)
+expect("run: start that sends an agent fails", summary, "sent an agent before it was asked for anything")
+shutil.rmtree(work3)  # the fix case's project and its origin
+work3.mkdir()
+by_hand = [("Bash", {"command": "git worktree add .claude/worktrees/typo -b typo"}, ""), ("Agent", {"description": "Fix the typo", "isolation": "worktree"}, "launched")]
+d.run_turn = lambda cwd, prompt, session, model, logfile: (prompt == d.FIX and land_fix(cwd), (tool_events(by_hand, "ok"), "s", 0.1, None))[1]
+name, passed, summary, *_ = d.run_case("fix", *d.CASES["fix"], None, work3)
+expect("run: a worktree the orchestrator made by hand fails", summary, "made a worktree by hand")
+shutil.rmtree(work3)  # the fix case's project and its origin
+work3.mkdir()
 d.run_turn = editing("TRACKER.md")
 name, passed, summary, *_ = d.run_case("fix", *d.CASES["fix"], None, work3)
 expect("run: any case may edit the tracker itself", "edited files itself" in summary, False)
@@ -245,6 +383,32 @@ expect("write: grep of the tracker is not a write", d.tracker_write("Bash", {"co
 expect("write: redirect elsewhere", d.tracker_write("Bash", {"command": "echo x >> notes.md"}), False)
 
 
+# built_on_main: the project's origin is a commit behind main, and a build has to start from main.
+root = project("unpushed")
+d.make_unpushed(root)
+expect("base: main starts one commit ahead of origin, with the checkout left alone", (d.git(root, "rev-list", "--count", "origin/main..main"), d.checkout_left_alone(root)), ("1", []))
+expect("base: nothing built yet passes", d.built_on_main(root), [])
+land_fix(root)
+expect("base: a fix built on main and fast-forwarded passes", d.built_on_main(root), [])
+stale = root / ".claude" / "worktrees" / "stale"
+subprocess.run(["git", "-C", str(root), "worktree", "add", "-q", "--no-track", str(stale), "-b", "stale", "origin/main"], check=True)
+subprocess.run(["git", "-C", str(root), "branch", "--no-track", "tool-made", "origin/main"], check=True)
+expect("base: branches left where origin is, with nothing built on them, pass", d.built_on_main(root), [])
+(stale / "src" / "cart.py").write_text((stale / "src" / "cart.py").read_text() + "# built on origin\n")
+commit(stale, "Build on origin's main")
+subprocess.run(["git", "-C", str(root), "worktree", "remove", str(stale)], check=True)
+expect("base: a branch built on origin's main fails", d.built_on_main(root), ["built on origin's main, not on main as committed"])
+subprocess.run(["git", "-C", str(root), "-c", "user.name=e", "-c", "user.email=e@e", "merge", "-q", "--no-edit", "stale"], check=True)
+subprocess.run(["git", "-C", str(root), "branch", "-q", "-D", "stale"], check=True)
+expect("base: and still fails once merged into main and deleted", d.built_on_main(root), ["built on origin's main, not on main as committed"])
+
+# Finishing a build's landing is the orchestrator's job too, so it isn't counted as work of its own.
+expect("finish: fast-forwarding to a builder's commit", d.finishes_a_build("Bash", {"command": "git merge --ff-only 71c3dc8 && git log --oneline -2"}), True)
+expect("finish: removing a builder's checkout", d.finishes_a_build("Bash", {"command": "git worktree remove .claude/worktrees/agent-a1 && git branch -d worktree-agent-a1"}), True)
+expect("finish: a look at the worktrees is still a call of its own", d.finishes_a_build("Bash", {"command": "git worktree list"}), False)
+expect("finish: a quiet fast-forward", d.finishes_a_build("Bash", {"command": "git merge -q --ff-only typo"}), True)
+expect("finish: a merge that isn't a fast-forward is still a call of its own", d.finishes_a_build("Bash", {"command": "git merge typo"}), False)
+
 # The call budget: 4 calls of its own. The stand-in lands the branch by hand.
 def landing(prompt, cwd):
     if prompt.startswith("Add a DELETE"):
@@ -260,7 +424,8 @@ def landing(prompt, cwd):
 def budget(n):
     def turn(cwd, prompt, session, model, logfile):
         landing(prompt, cwd)
-        calls = [("Agent", {"description": "Build"}, "launched")] + [("Bash", {"command": "git log --oneline -1"}, "abc")] * n
+        calls = [("Agent", {"description": "Build", "isolation": "worktree"}, "launched"), ("Bash", {"command": "git worktree remove .claude/worktrees/agent-a1"}, "")]
+        calls += [("Bash", {"command": "git log --oneline -1"}, "abc")] * n
         return tool_events(calls, "ok"), "s", 0.1, None
     return turn
 
