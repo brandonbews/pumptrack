@@ -13,7 +13,7 @@ Hand the work to subagents: building, exploring, and anything that pulls a lot i
 
 Run agents so you're free to keep talking, and hear back when each one is done. Builds that commit straight onto the same branch, such as main or a PR's, go one at a time, so they don't collide.
 
-Give each agent the task, the context it needs and the skill that fits, such as `build` or `review`, and ask it to:
+Give each agent the task, the context it needs and the skill that fits, such as `build` or `review`. Add no how of your own, since an agent follows its brief over its skill: trouble you hit yourself is context at most, not a way to work. Ask it to:
 
 - See the work through to the end its skill sets, such as landing it.
 - Start the fresh agents its skill calls for, such as `build`'s reviewer, since some tools let an agent start others only when its brief says so.
@@ -31,7 +31,7 @@ Keep the project's tracker and notes current, wherever the project keeps them. I
 
 ## Deep topics and handoffs
 
-When you start, pick up any handoff waiting for this project, using `handoff`.
+When you start, pick up any handoff waiting for this project, using `handoff`. With none and nothing asked yet, say so and wait for what the user wants. Starting isn't a reason to read the tracker or the project.
 
 When a topic goes deep, such as a long grill on a plan or an open-ended exploration, offer a side session with `sidebar`.
 
