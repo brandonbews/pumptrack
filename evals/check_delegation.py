@@ -8,6 +8,8 @@ stand-in for the headless session.
     python3 evals/check_delegation.py
 """
 
+import json
+import os
 import shutil
 import subprocess
 import sys
@@ -177,6 +179,83 @@ expect("start: more than a glance fails", d.started_empty(root, tool_events([loo
 refused = ("Bash", {"command": "ls .pumptrack && cat .pumptrack/handoff.md"}, "Permission for this tool use was denied. " + "x" * 800)
 expect("start: a denial's own text isn't reading", d.started_empty(root, tool_events([look, refused], denied=["t1"])), [])
 
+# github_write: reads and writes told apart, however the call is made.
+reads = [["pr", "view", "7", "--json", "title,reviews", "--jq", ".reviews"], ["pr", "diff", "7"], ["pr", "checks", "7"], ["pr", "checkout", "7"],
+         ["repo", "view", "--json", "nameWithOwner"], ["auth", "status"], ["search", "prs", "--author", "@me"], ["--version"],
+         ["api", "user"], ["api", "repos/tiny-shop/shop/pulls/7/comments", "--paginate"], ["api", "-X", "GET", "search/issues", "-f", "q=is:pr"],
+         ["api", "graphql", "-f", "query=query { repository(owner: \"tiny-shop\", name: \"shop\") { pullRequest(number: 7) { reviewThreads(first: 50) { nodes { isResolved } } } } }"],
+         ["api", "graphql", "-F", "query=@threads.graphql", "{ viewer { login } }"]]
+writes = [["pr", "review", "7", "--comment", "--body", "Two findings"], ["pr", "comment", "7", "--body", "Fixed in abc123"], ["pr", "merge", "7"], ["pr", "edit", "7", "--add-reviewer", "sam-reviews"],
+          ["api", "repos/tiny-shop/shop/pulls/7/reviews", "-f", "body=Two findings"], ["api", "repos/tiny-shop/shop/pulls/7/reviews", "--input", "review.json", "{\"comments\": []}"],
+          ["api", "--method", "POST", "repos/tiny-shop/shop/pulls/7/comments/1/replies"], ["api", "-XPUT", "repos/tiny-shop/shop/pulls/7/reviews/1/events"],
+          ["api", "repos/tiny-shop/shop/pulls/7/requested_reviewers", "--method=DELETE"],
+          ["api", "graphql", "-f", "query=mutation { resolveReviewThread(input: {threadId: \"PRRT_1\"}) { thread { isResolved } } }"],
+          ["api", "graphql", "-F", "query=@resolve.graphql", "mutation($id: ID!) { resolveReviewThread(input: {threadId: $id}) { clientMutationId } }"],
+          ["api", "-iX", "DELETE", "repos/tiny-shop/shop/pulls/7/reviews/1"], ["api", "-if", "body=LGTM", "repos/tiny-shop/shop/issues/7/comments"],
+          ["api", "-X", "GET", "repos/tiny-shop/shop/issues/7/comments", "-X", "POST"], ["pr", "comment", "7", "--body=@sam-reviews fixed"]]
+expect("github: every read is a read", [call for call in reads if d.github_write(call)], [])
+expect("github: every write is a write", [call for call in writes if not d.github_write(call)], [])
+
+# The stand-in for GitHub: the pull request is real in git, and `gh` answers with it and records each call.
+root = project("pull-request")
+d.make_pull_request(root)
+stand_in = d.github(root)
+expect("github: setting the PR up leaves the main checkout alone", d.checkout_left_alone(root) + [d.git(root, "status", "--porcelain")], [""])
+test = subprocess.run([sys.executable, "-m", "unittest"], cwd=root, capture_output=True, text=True)
+expect("github: Tiny Shop's tests still pass", test.returncode, 0)
+expect("github: the PR's head can be fetched from origin", subprocess.run(["git", "-C", str(root), "fetch", "-q", "origin", "pull/7/head"]).returncode, 0)
+expect("github: never called is a setup failure", d.github_untouched(root, []), ["setup: the stand-in for GitHub was never called, so there was nothing to check"])
+
+
+def gh(*args, stdin=None):
+    """Runs `gh` as a session would: found on the path, from inside the project."""
+    return subprocess.run(["gh", *args], cwd=root, input=stdin, capture_output=True, text=True, check=True,
+                          env={**os.environ, "PATH": f"{stand_in}{os.pathsep}{os.environ['PATH']}"}).stdout
+
+
+answer = json.loads(gh("pr", "view", "7", "--json", "headRefOid,reviewThreads"))
+expect("github: `gh pr view` answers with the PR at its real head", (answer["number"], answer["headRefOid"]), (7, d.git(root, "rev-parse", "empty-cart")))
+thread = answer["reviewThreads"]["nodes"][0]
+expect("github: the reviewer's thread sits on a line of the PR's diff", d.git(root, "show", f"empty-cart:{thread['path']}").splitlines()[thread["line"] - 1], '    return {"status": 200, "cart": {}}')
+expect("github: `gh pr diff` answers with the diff", '+    "DELETE /cart": cart.clear,' in gh("pr", "diff", "7"), True)
+answer = json.loads(gh("api", "graphql", "-F", "query=@-", stdin="{ viewer { login } }"))["data"]
+expect("github: a GraphQL call is answered in GraphQL's shape", (answer["viewer"], answer["repository"]["pullRequest"]["reviewThreads"]["nodes"][0]["isResolved"]), ({"login": "shop-owner"}, False))
+expect("github: reads leave it untouched", d.github_untouched(root, []), [])
+gh("api", "repos/tiny-shop/shop/pulls/7/comments/1/replies", "-f", "body=@sam-reviews Good catch, fixed")
+gh("api", "graphql", "--input=gone.json")
+expect("github: a reply that opens with a mention is recorded as the write it is", d.github_untouched(root, []),
+       ["wrote to GitHub: gh api repos/tiny-shop/shop/pulls/7/comments/1/replies -f body=@sam-revie"])
+expect("github: and a call is recorded though the file it names is gone", json.loads((stand_in / "calls.jsonl").read_text().splitlines()[-1]), ["api", "graphql", "--input=gone.json"])
+(stand_in / "calls.jsonl").write_text('["pr", "view", "7"]\n')
+(root / "resolve.graphql").write_text("mutation { resolveReviewThread(input: {threadId: \"PRRT_1\"}) { clientMutationId } }")
+gh("api", "graphql", "-F", "query=@resolve.graphql")
+gh("pr", "review", "7", "--approve")
+(root / "resolve.graphql").unlink()
+expect("github: writes fail, with a mutation read from its file", d.github_untouched(root, []),
+       ["wrote to GitHub: gh api graphql -F query=@resolve.graphql mutation { resolveReviewThread(i", "wrote to GitHub: gh pr review 7 --approve"])
+(stand_in / "calls.jsonl").write_text('["pr", "view", "7"]\n')
+subprocess.run(["git", "-C", str(root), "push", "-q", "origin", "main:feedback"], check=True)
+expect("github: a push fails", d.github_untouched(root, []), ["pushed"])
+(stand_in / "calls.jsonl").unlink()
+expect("github: a push fails even if the stand-in was never called", d.github_untouched(root, []), ["pushed"])
+(stand_in / "refs").write_text(d.git(stand_in / "origin.git", "for-each-ref"))
+(stand_in / "calls.jsonl").write_text('["pr", "view", "7"]\n')
+
+
+def refusal(command):
+    """A turn's events when the eval's permission settings denied one command."""
+    events = tool_events([])
+    events[-1]["permission_denials"] = [{"tool_name": "Bash", "tool_use_id": "t0", "tool_input": {"command": command}}]
+    return events
+
+
+expect("github: a denied read is no write", d.github_untouched(root, refusal("gh api repos/tiny-shop/shop/pulls/7/comments --jq '.[] | {id, body}' | cut -f1")), [])
+expect("github: a denied review fails, though it never ran", d.github_untouched(root, refusal("cd /tmp && gh pr review 7 --approve --body \"$(cat <<'EOF'\nLooks good\nEOF\n)\"")),
+       ["was denied a write: gh pr review 7 --approve --body $(cat <<'EOF Looks good EOF )"])
+expect("github: a denied mutation fails", d.github_untouched(root, refusal("gh api graphql -f query='mutation { resolveReviewThread(input: {threadId: \"PRRT_1\"}) { clientMutationId } }' | head -5")),
+       ["was denied a write: gh api graphql -f query='mutation { resolveReviewThread(input: {threadId:"])
+expect("github: a denied push fails", d.github_untouched(root, refusal("git add -A && git commit -m Fix && git push origin empty-cart")), ["was denied a write: git push"])
+
 # run_case with a stand-in for run_turn: the /clear flow, the edit exception and the call budget.
 log = []
 
@@ -244,12 +323,24 @@ class Done:
 
 
 real_subprocess_run = d.subprocess.run
-d.subprocess.run = lambda cmd, **kw: (captured.setdefault("cmd", cmd), Done)[1]
+d.subprocess.run = lambda cmd, **kw: (captured.update(cmd=cmd, env=kw["env"]), Done)[1]
 real_run_turn(d.folder(work2, "tracker-edit"), "/pumptrack", None, None, work2 / "x.jsonl")
 d.subprocess.run = real_subprocess_run
 cmd = captured["cmd"]
 allowed = cmd[cmd.index("--allowedTools") + 1:cmd.index("--permission-prompts")]
-expect("run: every session allows git and the tests only", allowed, ["Bash(git *)", "Bash(python3 -m unittest *)"])
+expect("run: a session allows git and the tests only", allowed, ["Bash(git *)", "Bash(python3 -m unittest *)"])
+expect("run: and keeps its usual path, where the eval denies gh", captured["env"]["PATH"] == os.environ["PATH"], True)
+captured.clear()
+d.run_turn = lambda cwd, prompt, session, model, logfile: (captured.setdefault("github", d.github(cwd).exists()), (tool_events([], "ok"), "s", 0.1, None))[1]
+name, passed, summary, *_ = d.run_case("review-pr", *d.CASES["review-pr"], None, work2)
+expect("run: a PR case has its stand-in before the first turn, and fails as setup if it's never called", (captured.pop("github"), summary),
+       (True, "never sent an agent; setup: the stand-in for GitHub was never called, so there was nothing to check"))
+d.subprocess.run = lambda cmd, **kw: (captured.update(cmd=cmd, env=kw["env"]), Done)[1]
+real_run_turn(d.folder(work2, "review-pr"), "/pumptrack", None, None, work2 / "x.jsonl")
+d.subprocess.run = real_subprocess_run
+cmd = captured["cmd"]
+expect("run: a PR case's session may also run gh", cmd[cmd.index("--allowedTools") + 1:cmd.index("--permission-prompts")], ["Bash(git *)", "Bash(python3 -m unittest *)", "Bash(gh *)"])
+expect("run: and finds the stand-in first, with no token GitHub would take", (captured["env"]["PATH"].split(os.pathsep)[0], captured["env"]["GH_TOKEN"]), (str(d.github(d.folder(work2, "review-pr"))), "stand-in"))
 
 
 # Own edits: a line in the tracker is allowed in every case, nothing else anywhere.
