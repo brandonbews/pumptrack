@@ -9,7 +9,7 @@ description: Spin a deep topic off into a fresh session the user works in direct
 
 ## Write the brief
 
-Write the brief to a file in a temp folder, covering:
+Write the brief to a file outside the project, such as in a temp folder, where the new session can read it, covering:
 
 - **Where it is:** the project's path, that the user works there directly, and how to reach this session, which is waiting to hear back, such as its name or its link in your tool.
 - **The goal,** and the skill that fits it, such as `grill`.

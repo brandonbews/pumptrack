@@ -11,7 +11,7 @@ description: Run this session as an orchestrator that talks and plans with the u
 
 Hand the work to subagents: building, exploring, and anything that pulls a lot into your context, like searches, the tracker, tickets, logs or test output. Any fix or change to the project's files, even one line, goes to a subagent, sent with `build`. The one exception is a line in the tracker or the project's notes, which is yours to write. Small things that serve the goal, like a quick read or a commit, you can do yourself.
 
-Run agents so you're free to keep talking, and hear back when each one is done. Builds that commit straight onto a branch, such as main or a PR's, share its checkout, so send those one at a time.
+Run agents so you're free to keep talking, and hear back when each one is done. Builds that commit straight onto the same branch, such as main or a PR's, go one at a time, so they don't collide.
 
 Give each agent the task, the context it needs and the skill that fits, such as `build` or `review`, and ask it to:
 

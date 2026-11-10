@@ -63,7 +63,7 @@ flowchart LR
 
 ## Install
 
-pumptrack works with agents that support [Agent Skills](https://agentskills.io/); the examples use Claude Code. `review-pr` and `address-pr-feedback` need the GitHub CLI (`gh`), signed in. The deepest line nests agents four deep: `address-pr-feedback`, `build`, `review` and `find-bugs`. Where a tool caps nesting lower, as Claude Code does at three unless you raise `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`, and Codex at one by default, the skills still work, but the steps below the cap run inside their caller instead of with fresh eyes.
+pumptrack works with agents that support [Agent Skills](https://agentskills.io/); the examples use Claude Code. `review-pr` and `address-pr-feedback` need a way to act on GitHub as you, such as the GitHub CLI (`gh`) signed in. The deepest line nests agents four deep: `address-pr-feedback`, `build`, `review` and `find-bugs`. Where a tool caps nesting lower, as Claude Code does at three unless you raise `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH`, and Codex at one by default, the skills still work, but the steps below the cap run inside their caller instead of with fresh eyes.
 
 Clone this repo: `git clone https://github.com/brandonbews/pumptrack.git`. Keep the clone if you'd rather link the skills than copy them, so every change reaches every project. A skill added or removed later reaches a project when you run setup there again.
 
