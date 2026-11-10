@@ -5,9 +5,12 @@ Builds a small throwaway project with the skills installed, starts /pumptrack
 in headless Claude Code sessions, and makes requests that never mention
 subagents. Then it looks at the orchestrator's own tool calls: it should send
 an agent, not edit files or dig through the project itself. Some cases also
-check what the session left behind: a handoff written and picked up, a change
-landed on a branch from a checkout of its own, or one line changed in the tracker.
-Every case checks that the main checkout was left alone.
+check what the session left behind: a handoff written and picked up, a fix
+landed on main, a change landed on a branch, or one line changed in the tracker.
+A build has to start in a checkout of its own that the orchestrator's tool made,
+not one made by hand, and from main as committed, which those projects' origin
+is a commit behind. Every case checks that the main checkout was left alone,
+with no worktree left behind.
 
 The sessions leave out your user-level setup (personal skills, CLAUDE.md and
 rules, settings and MCP servers) and auto memory, so the results reflect
@@ -37,6 +40,7 @@ from pathlib import Path
 REPO = Path(__file__).resolve().parent.parent
 ITEM = "SHOP-041"  # an open item in the tracker
 FIX = "Fix the typo in the README."  # it says "wiht"
+UNPUSHED = "Track SHOP-081"  # the commit a build case's main is ahead of its origin by
 
 # Each case starts with /pumptrack, then sends its turns. Only the last turn is
 # judged, and the flag says whether that turn must send an agent. A /clear turn
@@ -64,6 +68,7 @@ CASES = {
 
 # Where a case differs in what the project says about landing work.
 LANDING = {"build-branch": "Land work as a commit on a branch off main."}
+BUILDS = {"fix", "build-branch"}  # the cases whose judged turn asks for a build
 
 AGENT_TOOLS = {"Agent", "Task"}
 EDIT_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
@@ -228,6 +233,22 @@ def tracker():
     return "\n".join(items)
 
 
+def setup_git(*args):
+    subprocess.run(["git", "-c", "user.name=eval", "-c", "user.email=eval@example.com", *args], check=True)
+
+
+def make_unpushed(root):
+    """Gives the project an origin that main is one commit ahead of, as a project
+    mid-work is, so a checkout cut from origin doesn't start where the work lands."""
+    origin = root.parent / f"{root.name}-origin.git"
+    setup_git("init", "-q", "--bare", str(origin))
+    setup_git("-C", str(root), "remote", "add", "origin", str(origin))
+    setup_git("-C", str(root), "push", "-q", "origin", "main")
+    with open(root / "TRACKER.md", "a") as f:
+        f.write("\n## SHOP-081: Chore in receipts #81\n\nStatus: open\n\nChore work in the receipts module.\n")
+    setup_git("-C", str(root), "commit", "-qam", UNPUSHED)
+
+
 def run_turn(cwd, prompt, session, model, log):
     cmd = ["claude", "-p", prompt, "--output-format", "stream-json", "--verbose",
            "--permission-mode", "acceptEdits",
@@ -310,6 +331,12 @@ def tracker_write(name, args):
     return name == "Bash" and bool(re.search(r">>?\s*\S*TRACKER\.md", args.get("command", "")))
 
 
+def finishes_a_build(name, args):
+    """What a builder can't do from a checkout the tool made for it: fast-forwarding
+    the main checkout to its commit, and removing its checkout."""
+    return name == "Bash" and bool(re.search(r"merge\b.*--ff-only|worktree remove", args.get("command", "")))
+
+
 def handoff_written(root, events):
     """Before a clear, the session leaves a handoff for the next one, kept out of
     git. The log folder keeps a copy, since the next session deletes it."""
@@ -360,7 +387,8 @@ def checkout_left_alone(root):
     for a while, and no work is committed in it beyond a line in the tracker.
     Fast-forwarding it to a commit made elsewhere is fine. Git's own record of
     what happened in this checkout says so. Nothing is left in it either: no
-    stash, and no uncommitted change but the tracker's."""
+    stash, no uncommitted change but the tracker's, and no worktree, whoever
+    made it."""
     problems = []
     if git(root, "branch", "--show-current") != "main":
         problems.append("left the main checkout off main")
@@ -368,6 +396,8 @@ def checkout_left_alone(root):
         problems.append("left a stash behind")
     if stray := beyond_the_tracker(root, "HEAD"):
         problems.append(f"left uncommitted changes to {', '.join(stray)} in the main checkout")
+    if len(git(root, "worktree", "list").splitlines()) > 1:
+        problems.append("left a worktree behind")
     for entry in git(root, "reflog", "--format=%H %gs", "HEAD").splitlines():
         commit, _, action = entry.partition(" ")
         if action.startswith("checkout: moving from main to"):
@@ -379,16 +409,25 @@ def checkout_left_alone(root):
 
 
 def landed_on_branch(root, events):
-    """A change that lands on a new branch is built in a checkout of its own, which
-    is gone afterwards, and the main checkout is untouched beyond a line in the
-    tracker."""
+    """A change that lands on a new branch stays there, and leaves the main checkout
+    untouched beyond a line in the tracker."""
     branches = git(root, "for-each-ref", "--format=%(refname:short)", "refs/heads").split()
     if not any(b != "main" and git(root, "rev-list", f"main..{b}") for b in branches):
-        return ["setup: no branch was committed, so there was nothing to check"]
-    problems = only_the_tracker(root)
-    if len(git(root, "worktree", "list").splitlines()) > 1:
-        problems.append("left a worktree behind")
-    return problems
+        return only_the_tracker(root) or ["setup: no branch was committed, so there was nothing to check"]
+    return only_the_tracker(root)
+
+
+def built_on_main(root):
+    """A build starts from main as committed, not from origin's main behind it:
+    every branch with new commits holds main's unpushed one, and main was
+    fast-forwarded to the work, not merged with it."""
+    unpushed = git(root, "log", "--format=%H", f"--grep=^{UNPUSHED}$", "main")
+    holding = git(root, "branch", "--contains", unpushed, "--format=%(refname:short)").split()
+    branches = git(root, "for-each-ref", "--format=%(refname:short)", "refs/heads").split()
+    stale = [b for b in branches if b not in holding and git(root, "rev-list", f"origin/main..{b}")]
+    if stale or git(root, "rev-list", "--merges", "origin/main..main"):
+        return ["built on origin's main, not on main as committed"]
+    return []
 
 
 def tracker_marked(root, events):
@@ -421,6 +460,8 @@ def run_case(name, turns, must_delegate, model, workdir):
     root.mkdir()
     make_project(root, LANDING.get(name, "Land work as a commit on main."))
     session, cost, spent, problems, denied = None, 0, 0, [], set()
+    if name in BUILDS:
+        make_unpushed(root)
     for i, prompt in enumerate(["/pumptrack"] + turns):
         if prompt == "/clear":
             problems += handoff_written(root, events)
@@ -434,11 +475,17 @@ def run_case(name, turns, must_delegate, model, workdir):
             break
     calls, reading = own_activity(events)
     # Looking for a handoff, reading it and removing it is the orchestrator's own
-    # job, and so is a line in the tracker.
-    own = [(n, a) for n, a in calls if ".pumptrack" not in str(a) and not tracker_write(n, a)]
+    # job, and so are a line in the tracker and finishing a build's landing.
+    own = [(n, a) for n, a in calls if ".pumptrack" not in str(a) and not tracker_write(n, a) and not finishes_a_build(n, a)]
     own_calls = sum(n in WORK_TOOLS for n, _ in own)
-    if must_delegate and not failure and not any(n in AGENT_TOOLS for n, _ in calls):
+    agents = [a for n, a in calls if n in AGENT_TOOLS]
+    if must_delegate and not failure and not agents:
         problems.append("never sent an agent")
+    # Claude Code starts an agent in a checkout of its own when asked for a worktree.
+    elif name in BUILDS and not failure and not any(a.get("isolation") == "worktree" for a in agents):
+        problems.append("didn't start the build in a checkout of its own")
+    if any(n == "Bash" and "worktree add" in a.get("command", "") for n, a in calls):
+        problems.append("made a worktree by hand")
     if any(n in EDIT_TOOLS for n, _ in own):
         problems.append("edited files itself")
     if own_calls > MAX_OWN_CALLS:
@@ -447,6 +494,8 @@ def run_case(name, turns, must_delegate, model, workdir):
         problems.append(f"read {len(reading):,} characters itself")
     if FIX in turns and not failure and "wiht" in git(root, "show", "main:README.md"):
         problems.append("the README typo is still on main")
+    if name in BUILDS and not failure:
+        problems += built_on_main(root)
     if not failure:
         problems += checkout_left_alone(root)
     if name in CHECKS and not failure:

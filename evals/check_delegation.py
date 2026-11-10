@@ -96,7 +96,7 @@ expect("branch: branch without commits is still setup", d.landed_on_branch(root,
 wt = root / ".claude" / "worktrees" / "cart"
 (wt / "src" / "cart.py").write_text((wt / "src" / "cart.py").read_text() + "\n\ndef empty(request):\n    return {'status': 200}\n")
 commit(wt, "Add DELETE /cart")
-expect("branch: worktree left behind fails", d.landed_on_branch(root, []), ["left a worktree behind"])
+expect("checkout: a worktree left behind fails, whoever made it", d.checkout_left_alone(root), ["left a worktree behind"])
 subprocess.run(["git", "-C", str(root), "worktree", "remove", str(wt)], check=True)
 expect("branch: committed, removed, main clean passes", d.landed_on_branch(root, []), [])
 (root / "README.md").write_text("dirty\n")
@@ -121,6 +121,7 @@ expect("checkout: switched away and back fails", d.checkout_left_alone(root), ["
 root = project("fast-forward")
 land_fix(root)
 expect("checkout: fast-forwarding main to a commit made elsewhere passes", d.checkout_left_alone(root), [])
+expect("branch: but where the work was to stay on a branch, that fails, and not as setup", d.landed_on_branch(root, []), ["changed README.md"])
 with open(root / "TRACKER.md", "a") as f:
     f.write("\n## SHOP-081: Chore in receipts #81\n\nStatus: open\n")
 expect("checkout: an uncommitted tracker line passes", d.checkout_left_alone(root), [])
@@ -184,7 +185,7 @@ def fake_turn(cwd, prompt, session, model, logfile):
     log.append((prompt, session))
     if prompt == d.FIX:
         land_fix(cwd)
-        return tool_events([("Agent", {"description": "Fix the typo"}, "launched")], "Landed.", denied=["a", "b"]), "s1", 0.3, None
+        return tool_events([("Agent", {"description": "Fix the typo", "isolation": "worktree"}, "launched")], "Landed.", denied=["a", "b"]), "s1", 0.3, None
     if prompt == "I'm about to clear. Write a handoff.":
         (cwd / ".pumptrack").mkdir(exist_ok=True)
         (cwd / ".pumptrack" / "handoff.md").write_text(body + "Delete this file once you've picked it up.\n")
@@ -263,10 +264,17 @@ work3 = Path(tempfile.mkdtemp(prefix="check-delegation-edits-"))
 sent = lambda cwd, prompt, session, model, logfile: (tool_events([("Agent", {"description": "Do it"}, "launched")], "ok"), "s", 0.1, None)
 d.run_turn = sent
 name, passed, summary, *_ = d.run_case("fix", *d.CASES["fix"], None, work3)
-expect("run: a fix sent to an agent that never landed fails", summary, "the README typo is still on main")
+expect("run: a fix sent to an agent in the user's checkout, which never landed, fails", summary, "didn't start the build in a checkout of its own; the README typo is still on main")
 name, passed, summary, *_ = d.run_case("start", *d.CASES["start"], None, work3)
 expect("run: start that sends an agent fails", summary, "sent an agent before it was asked for anything")
-shutil.rmtree(d.folder(work3, "fix"))
+shutil.rmtree(work3)  # the fix case's project and its origin
+work3.mkdir()
+by_hand = [("Bash", {"command": "git worktree add .claude/worktrees/typo -b typo"}, ""), ("Agent", {"description": "Fix the typo", "isolation": "worktree"}, "launched")]
+d.run_turn = lambda cwd, prompt, session, model, logfile: (prompt == d.FIX and land_fix(cwd), (tool_events(by_hand, "ok"), "s", 0.1, None))[1]
+name, passed, summary, *_ = d.run_case("fix", *d.CASES["fix"], None, work3)
+expect("run: a worktree the orchestrator made by hand fails", summary, "made a worktree by hand")
+shutil.rmtree(work3)  # the fix case's project and its origin
+work3.mkdir()
 d.run_turn = editing("TRACKER.md")
 name, passed, summary, *_ = d.run_case("fix", *d.CASES["fix"], None, work3)
 expect("run: any case may edit the tracker itself", "edited files itself" in summary, False)
@@ -284,6 +292,32 @@ expect("write: grep of the tracker is not a write", d.tracker_write("Bash", {"co
 expect("write: redirect elsewhere", d.tracker_write("Bash", {"command": "echo x >> notes.md"}), False)
 
 
+# built_on_main: the project's origin is a commit behind main, and a build has to start from main.
+root = project("unpushed")
+d.make_unpushed(root)
+expect("base: main starts one commit ahead of origin, with the checkout left alone", (d.git(root, "rev-list", "--count", "origin/main..main"), d.checkout_left_alone(root)), ("1", []))
+expect("base: nothing built yet passes", d.built_on_main(root), [])
+land_fix(root)
+expect("base: a fix built on main and fast-forwarded passes", d.built_on_main(root), [])
+stale = root / ".claude" / "worktrees" / "stale"
+subprocess.run(["git", "-C", str(root), "worktree", "add", "-q", "--no-track", str(stale), "-b", "stale", "origin/main"], check=True)
+subprocess.run(["git", "-C", str(root), "branch", "--no-track", "tool-made", "origin/main"], check=True)
+expect("base: branches left where origin is, with nothing built on them, pass", d.built_on_main(root), [])
+(stale / "src" / "cart.py").write_text((stale / "src" / "cart.py").read_text() + "# built on origin\n")
+commit(stale, "Build on origin's main")
+subprocess.run(["git", "-C", str(root), "worktree", "remove", str(stale)], check=True)
+expect("base: a branch built on origin's main fails", d.built_on_main(root), ["built on origin's main, not on main as committed"])
+subprocess.run(["git", "-C", str(root), "-c", "user.name=e", "-c", "user.email=e@e", "merge", "-q", "--no-edit", "stale"], check=True)
+subprocess.run(["git", "-C", str(root), "branch", "-q", "-D", "stale"], check=True)
+expect("base: and still fails once merged into main and deleted", d.built_on_main(root), ["built on origin's main, not on main as committed"])
+
+# Finishing a build's landing is the orchestrator's job too, so it isn't counted as work of its own.
+expect("finish: fast-forwarding to a builder's commit", d.finishes_a_build("Bash", {"command": "git merge --ff-only 71c3dc8 && git log --oneline -2"}), True)
+expect("finish: removing a builder's checkout", d.finishes_a_build("Bash", {"command": "git worktree remove .claude/worktrees/agent-a1 && git branch -d worktree-agent-a1"}), True)
+expect("finish: a look at the worktrees is still a call of its own", d.finishes_a_build("Bash", {"command": "git worktree list"}), False)
+expect("finish: a quiet fast-forward", d.finishes_a_build("Bash", {"command": "git merge -q --ff-only typo"}), True)
+expect("finish: a merge that isn't a fast-forward is still a call of its own", d.finishes_a_build("Bash", {"command": "git merge typo"}), False)
+
 # The call budget: 4 calls of its own. The stand-in lands the branch by hand.
 def landing(prompt, cwd):
     if prompt.startswith("Add a DELETE"):
@@ -299,7 +333,8 @@ def landing(prompt, cwd):
 def budget(n):
     def turn(cwd, prompt, session, model, logfile):
         landing(prompt, cwd)
-        calls = [("Agent", {"description": "Build"}, "launched")] + [("Bash", {"command": "git log --oneline -1"}, "abc")] * n
+        calls = [("Agent", {"description": "Build", "isolation": "worktree"}, "launched"), ("Bash", {"command": "git worktree remove .claude/worktrees/agent-a1"}, "")]
+        calls += [("Bash", {"command": "git log --oneline -1"}, "abc")] * n
         return tool_events(calls, "ok"), "s", 0.1, None
     return turn
 
